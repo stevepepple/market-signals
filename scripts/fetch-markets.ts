@@ -14,7 +14,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = resolve(__dirname, "../public/data/markets.json");
 const INSIDER_OUTPUT_PATH = resolve(__dirname, "../public/data/insider-trades.json");
 
-const KALSHI_BASE_URL = "https://trading-api.kalshi.com/trade-api/v2";
+const KALSHI_API_URLS = [
+  "https://trading-api.kalshi.com/trade-api/v2",
+  "https://api.elections.kalshi.com/trade-api/v2",
+];
 const POLYMARKET_GAMMA_URL = "https://gamma-api.polymarket.com";
 const MIN_VOLUME_KALSHI = 1000;
 const MIN_VOLUME_POLYMARKET = 5000;
@@ -85,6 +88,17 @@ function classifyMarket(title: string, subtitle: string): string[] {
 }
 
 async function fetchKalshiMarkets(): Promise<NormalizedMarket[]> {
+  // Try each API URL until one works (trading-api requires auth, elections is public)
+  for (const baseUrl of KALSHI_API_URLS) {
+    console.log(`Trying Kalshi API: ${baseUrl}`);
+    const results = await fetchKalshiFromUrl(baseUrl);
+    if (results.length > 0) return results;
+  }
+  console.error("All Kalshi API endpoints failed");
+  return [];
+}
+
+async function fetchKalshiFromUrl(baseUrl: string): Promise<NormalizedMarket[]> {
   const results: NormalizedMarket[] = [];
   let cursor = "";
   const limit = 200;
@@ -93,9 +107,9 @@ async function fetchKalshiMarkets(): Promise<NormalizedMarket[]> {
     while (true) {
       const params = new URLSearchParams({ limit: String(limit), status: "open" });
       if (cursor) params.set("cursor", cursor);
-      const resp = await fetchWithTimeout(`${KALSHI_BASE_URL}/markets?${params}`);
+      const resp = await fetchWithTimeout(`${baseUrl}/markets?${params}`);
       if (!resp.ok) {
-        console.error(`Kalshi API error: ${resp.status} ${resp.statusText}`);
+        console.error(`Kalshi API error (${baseUrl}): ${resp.status} ${resp.statusText}`);
         break;
       }
       const data = await resp.json();
