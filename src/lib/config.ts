@@ -50,12 +50,12 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   energy_climate: {
     label: "Energy & Climate Policy",
-    keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling"],
+    keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling", "crude oil", "natural gas", "opec", "oil production"],
     kalshi_series: [],
   },
   geopolitical: {
     label: "Geopolitical Risk",
-    keywords: ["war", "conflict", "sanctions", "nato", "china", "taiwan", "russia", "ukraine"],
+    keywords: ["war", "conflict", "sanctions", "nato", "china", "taiwan", "russia", "ukraine", "iran", "strike", "ceasefire", "regime", "invasion", "military", "troops", "forces enter"],
     kalshi_series: [],
   },
   ai_tech: {

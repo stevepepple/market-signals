@@ -31,8 +31,8 @@ const SIGNAL_THEMES: Record<string, { label: string; keywords: string[] }> = {
   tariffs_trade: { label: "Tariffs & Trade Policy", keywords: ["tariff", "trade war", "import duty", "trade policy", "trade deal"] },
   tech_regulation: { label: "Tech Regulation & Antitrust", keywords: ["antitrust", "tech regulation", "big tech", "breakup", "ftc"] },
   crypto: { label: "Crypto & Digital Assets", keywords: ["bitcoin", "crypto", "ethereum", "btc", "digital asset", "stablecoin"] },
-  energy_climate: { label: "Energy & Climate Policy", keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling"] },
-  geopolitical: { label: "Geopolitical Risk", keywords: ["war", "conflict", "sanctions", "nato", "china", "taiwan", "russia", "ukraine"] },
+  energy_climate: { label: "Energy & Climate Policy", keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling", "crude oil", "natural gas", "opec", "oil production"] },
+  geopolitical: { label: "Geopolitical Risk", keywords: ["war", "conflict", "sanctions", "nato", "china", "taiwan", "russia", "ukraine", "iran", "strike", "ceasefire", "regime", "invasion", "military", "troops", "forces enter"] },
   ai_tech: { label: "AI & Technology", keywords: ["artificial intelligence", "ai", "openai", "gpu", "nvidia", "chatgpt", "agi"] },
   housing: { label: "Housing Market", keywords: ["housing", "home price", "mortgage", "real estate", "home sales"] },
   employment: { label: "Jobs & Employment", keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment", "jobless claims", "jobs report", "job growth"] },
@@ -63,14 +63,20 @@ interface NormalizedMarket {
   themes: string[];
 }
 
-async function fetchWithTimeout(url: string): Promise<Response> {
+const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
+async function fetchWithTimeout(url: string, headers?: Record<string, string>): Promise<Response> {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await fetch(url, { signal: controller.signal, headers });
   } finally {
     clearTimeout(id);
   }
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function classifyMarket(title: string, subtitle: string): string[] {
@@ -89,7 +95,9 @@ function classifyMarket(title: string, subtitle: string): string[] {
 
 async function fetchKalshiMarkets(): Promise<NormalizedMarket[]> {
   // Try each API URL until one works (trading-api requires auth, elections is public)
-  for (const baseUrl of KALSHI_API_URLS) {
+  for (let i = 0; i < KALSHI_API_URLS.length; i++) {
+    if (i > 0) await delay(2000); // Avoid rate limiting between attempts
+    const baseUrl = KALSHI_API_URLS[i];
     console.log(`Trying Kalshi API: ${baseUrl}`);
     const results = await fetchKalshiFromUrl(baseUrl);
     if (results.length > 0) return results;
@@ -284,7 +292,7 @@ async function fetchInsiderTrades(): Promise<InsiderTrade[]> {
 
   for (const page of pages) {
     try {
-      const resp = await fetchWithTimeout(page.url);
+      const resp = await fetchWithTimeout(page.url, { "User-Agent": BROWSER_UA, "Accept": "text/html" });
       if (!resp.ok) {
         console.error(`OpenInsider error for ${page.type}: ${resp.status}`);
         continue;
