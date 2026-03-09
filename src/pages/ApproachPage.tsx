@@ -7,14 +7,20 @@ export default function ApproachPage() {
   useEffect(() => {
     fetch(import.meta.env.BASE_URL + "data/portfolio.json")
       .then((r) => r.json())
-      .then((data: PortfolioData) => setPortfolio(data))
+      .then((data) => {
+        if (data.accounts) {
+          setPortfolio(data as PortfolioData);
+        } else {
+          setPortfolio({ accounts: [data] } as PortfolioData);
+        }
+      })
       .catch(() => {});
   }, []);
 
   const breakdown = useMemo(() => {
     if (!portfolio) return null;
-    const h = portfolio.holdings;
-    const totalEquity = h.reduce((s, x) => s + x.equity, 0);
+    const h = portfolio.accounts.flatMap((a) => a.holdings);
+    const totalEquity = h.reduce((s: number, x) => s + x.equity, 0);
 
     const categories: Record<string, { tickers: string[]; equity: number }> = {
       "ESG / Sustainable": { tickers: [], equity: 0 },
