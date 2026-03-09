@@ -8,9 +8,9 @@ interface SummaryMetricsProps {
 
 function MetricCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-gray-900 rounded-lg p-4 border border-gray-800">
-      <p className="text-sm text-gray-400">{label}</p>
-      <p className="text-2xl font-bold text-gray-100">
+    <div className="bg-white rounded-lg p-4 border border-gray-200 dark:bg-gray-900 dark:border-gray-800">
+      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
         {value.toLocaleString()}
       </p>
     </div>

@@ -4,6 +4,8 @@ import {
   THEME_INVESTMENTS,
   STRONG_SIGNAL_THRESHOLD,
   MODERATE_SIGNAL_THRESHOLD,
+  MAX_THEME_WEIGHT,
+  DIVERSIFICATION_BONUS,
 } from "./config";
 
 export function signalStrength(yesPrice: number | null): [string, number, string] {
@@ -79,10 +81,11 @@ function isScenarioActive(scenarioKey: string, avgPrice: number): boolean {
 }
 
 export function generateRecommendations(themeSignals: Record<string, ThemeSignal>): Recommendation[] {
-  const tickerScores: Record<string, {
+  // Phase 1: Collect per-theme raw scores for each ticker
+  const tickerThemeScores: Record<string, {
     name: string;
     type: "ETF" | "stock";
-    rawScore: number;
+    themeScores: Record<string, number>;
     contributingThemes: string[];
     rationales: string[];
   }> = {};
@@ -101,34 +104,53 @@ export function generateRecommendations(themeSignals: Record<string, ThemeSignal
         const directionFactor = inv.direction === "positive" ? 1.0 : -1.0;
         const score = magnitude * inv.weight * directionFactor;
 
-        if (!tickerScores[inv.ticker]) {
-          tickerScores[inv.ticker] = {
+        if (!tickerThemeScores[inv.ticker]) {
+          tickerThemeScores[inv.ticker] = {
             name: inv.name,
             type: inv.type ?? "ETF",
-            rawScore: 0,
+            themeScores: {},
             contributingThemes: [],
             rationales: [],
           };
         }
 
-        const entry = tickerScores[inv.ticker];
-        entry.rawScore += score;
+        const entry = tickerThemeScores[inv.ticker];
+        entry.themeScores[themeKey] = (entry.themeScores[themeKey] ?? 0) + score;
         entry.contributingThemes.push(signal.label);
         entry.rationales.push(`${signal.label}: ${Math.round(avgPrice * 100)}% probability (${strength})`);
       }
     }
   }
 
+  // Phase 2: Apply MAX_THEME_WEIGHT cap and diversification bonus
   const rows: Recommendation[] = [];
-  for (const [ticker, data] of Object.entries(tickerScores)) {
-    if (Math.abs(data.rawScore) < 0.05) continue;
+  for (const [ticker, data] of Object.entries(tickerThemeScores)) {
+    const themeEntries = Object.values(data.themeScores);
+    const totalAbsUncapped = themeEntries.reduce((sum, s) => sum + Math.abs(s), 0);
+    if (totalAbsUncapped < 0.05) continue;
+
+    // Cap each theme's contribution
+    let cappedScore = 0;
+    for (const themeScore of themeEntries) {
+      const abs = Math.abs(themeScore);
+      const capped = Math.min(abs, totalAbsUncapped * MAX_THEME_WEIGHT);
+      cappedScore += Math.sign(themeScore) * capped;
+    }
+
+    // Diversification bonus for tickers appearing across multiple themes
+    const uniqueThemes = new Set(data.contributingThemes).size;
+    if (uniqueThemes > 1) {
+      cappedScore *= 1 + DIVERSIFICATION_BONUS * (uniqueThemes - 1);
+    }
+
+    if (Math.abs(cappedScore) < 0.05) continue;
     rows.push({
       ticker,
       name: data.name,
       type: data.type,
-      score: Math.round(data.rawScore * 1000) / 1000,
-      abs_score: Math.round(Math.abs(data.rawScore) * 1000) / 1000,
-      direction: data.rawScore > 0 ? "bullish" : "bearish",
+      score: Math.round(cappedScore * 1000) / 1000,
+      abs_score: Math.round(Math.abs(cappedScore) * 1000) / 1000,
+      direction: cappedScore > 0 ? "bullish" : "bearish",
       signal_themes: [...new Set(data.contributingThemes)].sort().join(", "),
       rationale: data.rationales.slice(0, 3).join(" | "),
     });

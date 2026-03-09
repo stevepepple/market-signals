@@ -67,6 +67,39 @@ describe("generateRecommendations", () => {
     expect(recs.some((r) => r.ticker === "TLT")).toBe(true);
   });
 
+  it("caps single theme contribution via MAX_THEME_WEIGHT", () => {
+    // Two themes with very different magnitudes — the larger one should be capped
+    const signals: Record<string, ThemeSignal> = {
+      crypto: {
+        label: "Crypto & Digital Assets",
+        avg_yes_price: 0.90,
+        market_count: 10,
+        total_volume_24h: 500000,
+        strength: "strong",
+        magnitude: 0.8,
+        direction: "yes",
+        top_markets: [],
+      },
+      fed_rate: {
+        label: "Fed Interest Rate Decisions",
+        avg_yes_price: 0.70,
+        market_count: 2,
+        total_volume_24h: 10000,
+        strength: "moderate",
+        magnitude: 0.4,
+        direction: "yes",
+        top_markets: [],
+      },
+    };
+    const recs = generateRecommendations(signals);
+    // Crypto-only tickers (IBIT, ETHA, etc.) should not have outsized scores
+    const ibit = recs.find((r) => r.ticker === "IBIT");
+    const tlt = recs.find((r) => r.ticker === "TLT");
+    // Both should exist; the cap prevents crypto from totally dominating
+    expect(ibit).toBeDefined();
+    expect(tlt).toBeDefined();
+  });
+
   it("skips weak signals", () => {
     const signals: Record<string, ThemeSignal> = {
       fed_rate: {

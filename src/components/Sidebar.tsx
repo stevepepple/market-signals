@@ -6,6 +6,8 @@ interface SidebarProps {
   lastRefresh: string;
   onRefresh: () => void;
   themeOptions: string[];
+  dark: boolean;
+  onToggleDark: () => void;
 }
 
 export default function Sidebar({
@@ -14,21 +16,40 @@ export default function Sidebar({
   lastRefresh,
   onRefresh,
   themeOptions,
+  dark,
+  onToggleDark,
 }: SidebarProps) {
   const update = (patch: Partial<Filters>) =>
     onFilterChange({ ...filters, ...patch });
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-gray-900 border-r border-gray-800 flex flex-col p-4 overflow-y-auto">
-      <h2 className="text-lg font-semibold text-gray-100 mb-6">
-        Market Signals
-      </h2>
+    <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 dark:bg-gray-900 dark:border-gray-800 flex flex-col p-4 overflow-y-auto">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Market Signals
+        </h2>
+        <button
+          onClick={onToggleDark}
+          className="p-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          title={dark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {dark ? (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+              <path d="M10 2a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 2zM10 15a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 15zM10 7a3 3 0 100 6 3 3 0 000-6zM15.657 5.404a.75.75 0 10-1.06-1.06l-1.061 1.06a.75.75 0 001.06 1.06l1.06-1.06zM6.464 14.596a.75.75 0 10-1.06-1.06l-1.06 1.06a.75.75 0 001.06 1.06l1.06-1.06zM18 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0118 10zM5 10a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 015 10zM14.596 15.657a.75.75 0 001.06-1.06l-1.06-1.061a.75.75 0 10-1.06 1.06l1.06 1.06zM5.404 6.464a.75.75 0 001.06-1.06l-1.06-1.06a.75.75 0 10-1.06 1.06l1.06 1.06z" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+              <path fillRule="evenodd" d="M7.455 2.004a.75.75 0 01.26.77 7 7 0 009.958 7.967.75.75 0 011.067.853A8.5 8.5 0 116.647 1.921a.75.75 0 01.808.083z" clipRule="evenodd" />
+            </svg>
+          )}
+        </button>
+      </div>
 
       <section className="mb-6">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
           Data Sources
         </h3>
-        <label className="flex items-center gap-2 text-gray-300 mb-2 cursor-pointer">
+        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2 cursor-pointer">
           <input
             type="checkbox"
             checked={filters.useKalshi}
@@ -37,7 +58,7 @@ export default function Sidebar({
           />
           Kalshi
         </label>
-        <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
+        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 cursor-pointer">
           <input
             type="checkbox"
             checked={filters.usePolymarket}
@@ -49,11 +70,11 @@ export default function Sidebar({
       </section>
 
       <section className="mb-6">
-        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-3">
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
           Filters
         </h3>
 
-        <label className="flex items-center gap-2 text-gray-300 mb-2 cursor-pointer">
+        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2 cursor-pointer">
           <input
             type="checkbox"
             checked={filters.filterVolume}
@@ -64,7 +85,7 @@ export default function Sidebar({
         </label>
 
         <div className="mb-3">
-          <label className="block text-sm text-gray-400 mb-1">
+          <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
             Signal Strength
           </label>
           <select
@@ -74,7 +95,7 @@ export default function Sidebar({
                 signalFilter: e.target.value as Filters["signalFilter"],
               })
             }
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-200"
+            className="w-full bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200"
           >
             <option value="all">All</option>
             <option value="strong">Strong Only</option>
@@ -82,7 +103,7 @@ export default function Sidebar({
           </select>
         </div>
 
-        <label className="flex items-center gap-2 text-gray-300 mb-2 cursor-pointer">
+        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-2 cursor-pointer">
           <input
             type="checkbox"
             checked={filters.showEtfs}
@@ -92,7 +113,7 @@ export default function Sidebar({
           Show ETFs
         </label>
 
-        <label className="flex items-center gap-2 text-gray-300 mb-3 cursor-pointer">
+        <label className="flex items-center gap-2 text-gray-700 dark:text-gray-300 mb-3 cursor-pointer">
           <input
             type="checkbox"
             checked={filters.showStocks}
@@ -103,13 +124,13 @@ export default function Sidebar({
         </label>
 
         <div className="mb-3">
-          <label className="block text-sm text-gray-400 mb-1">
+          <label className="block text-sm text-gray-500 dark:text-gray-400 mb-1">
             Theme Filter
           </label>
           <select
             value={filters.selectedTheme}
             onChange={(e) => update({ selectedTheme: e.target.value })}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-gray-200"
+            className="w-full bg-gray-50 border border-gray-300 dark:bg-gray-800 dark:border-gray-700 rounded px-2 py-1.5 text-sm text-gray-700 dark:text-gray-200"
           >
             <option value="">All Themes</option>
             {themeOptions.map((t) => (
@@ -121,8 +142,8 @@ export default function Sidebar({
         </div>
       </section>
 
-      <div className="mt-auto pt-4 border-t border-gray-800">
-        <p className="text-xs text-gray-500 mb-2">
+      <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-800">
+        <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
           Last refresh: {lastRefresh || "never"}
         </p>
         <button

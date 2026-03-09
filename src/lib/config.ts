@@ -11,6 +11,12 @@ export const MIN_VOLUME_POLYMARKET = 5000;
 
 export const REQUEST_TIMEOUT_MS = 5000;
 
+/** Cap any single theme's contribution to prevent crypto/AI from dominating. */
+export const MAX_THEME_WEIGHT = 0.3;
+
+/** Bonus multiplier for recommendations appearing across multiple themes. */
+export const DIVERSIFICATION_BONUS = 0.1;
+
 export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   fed_rate: {
     label: "Fed Interest Rate Decisions",
@@ -70,6 +76,31 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   government_shutdown: {
     label: "Government Shutdown / Debt Ceiling",
     keywords: ["shutdown", "debt ceiling", "government funding", "default"],
+    kalshi_series: [],
+  },
+  healthcare_biotech: {
+    label: "Healthcare & Biotech",
+    keywords: ["drug approval", "fda", "medicare", "biotech", "pharmaceutical", "vaccine", "clinical trial", "medicaid"],
+    kalshi_series: [],
+  },
+  financials_banking: {
+    label: "Financials & Banking",
+    keywords: ["bank regulation", "fdic", "fintech", "credit", "banking crisis", "bank failure", "dodd-frank", "basel"],
+    kalshi_series: [],
+  },
+  commodities_agriculture: {
+    label: "Commodities & Agriculture",
+    keywords: ["gold price", "silver", "wheat", "crop", "commodity", "corn", "soybean", "copper", "mining"],
+    kalshi_series: [],
+  },
+  defense_aerospace: {
+    label: "Defense & Aerospace",
+    keywords: ["defense spending", "military", "nato budget", "space", "pentagon", "arms deal", "missile", "drone"],
+    kalshi_series: [],
+  },
+  consumer_retail: {
+    label: "Consumer & Retail",
+    keywords: ["consumer spending", "retail sales", "consumer confidence", "holiday spending", "e-commerce", "consumer sentiment"],
     kalshi_series: [],
   },
 };
@@ -195,6 +226,60 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
       { ticker: "SHV", name: "iShares Short Treasury Bond ETF", direction: "positive", weight: 0.5 },
       { ticker: "GLD", name: "SPDR Gold Shares", direction: "positive", weight: 0.4 },
       { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "negative", weight: 0.4 },
+    ],
+  },
+  healthcare_biotech: {
+    biotech_bullish: [
+      { ticker: "XBI", name: "SPDR S&P Biotech ETF", direction: "positive", weight: 0.9 },
+      { ticker: "IBB", name: "iShares Biotechnology ETF", direction: "positive", weight: 0.8 },
+      { ticker: "JNJ", name: "Johnson & Johnson", direction: "positive", weight: 0.5, type: "stock" },
+      { ticker: "PFE", name: "Pfizer", direction: "positive", weight: 0.5, type: "stock" },
+      { ticker: "XLV", name: "Health Care Select Sector SPDR", direction: "positive", weight: 0.7 },
+    ],
+  },
+  financials_banking: {
+    banking_bullish: [
+      { ticker: "XLF", name: "Financial Select Sector SPDR", direction: "positive", weight: 0.9 },
+      { ticker: "KRE", name: "SPDR S&P Regional Banking ETF", direction: "positive", weight: 0.8 },
+      { ticker: "JPM", name: "JPMorgan Chase", direction: "positive", weight: 0.6, type: "stock" },
+      { ticker: "GS", name: "Goldman Sachs", direction: "positive", weight: 0.6, type: "stock" },
+    ],
+    banking_crisis: [
+      { ticker: "XLF", name: "Financial Select Sector SPDR", direction: "negative", weight: 0.9 },
+      { ticker: "KRE", name: "SPDR S&P Regional Banking ETF", direction: "negative", weight: 0.9 },
+      { ticker: "GLD", name: "SPDR Gold Shares", direction: "positive", weight: 0.5 },
+      { ticker: "TLT", name: "iShares 20+ Year Treasury Bond ETF", direction: "positive", weight: 0.6 },
+    ],
+  },
+  commodities_agriculture: {
+    commodities_bullish: [
+      { ticker: "GLD", name: "SPDR Gold Shares", direction: "positive", weight: 0.9 },
+      { ticker: "SLV", name: "iShares Silver Trust", direction: "positive", weight: 0.8 },
+      { ticker: "DBA", name: "Invesco DB Agriculture Fund", direction: "positive", weight: 0.8 },
+      { ticker: "FCX", name: "Freeport-McMoRan", direction: "positive", weight: 0.6, type: "stock" },
+      { ticker: "DBC", name: "Invesco DB Commodity Index", direction: "positive", weight: 0.7 },
+    ],
+  },
+  defense_aerospace: {
+    defense_increase: [
+      { ticker: "ITA", name: "iShares U.S. Aerospace & Defense ETF", direction: "positive", weight: 0.9 },
+      { ticker: "LMT", name: "Lockheed Martin", direction: "positive", weight: 0.8, type: "stock" },
+      { ticker: "RTX", name: "RTX Corporation", direction: "positive", weight: 0.7, type: "stock" },
+      { ticker: "BA", name: "Boeing", direction: "positive", weight: 0.5, type: "stock" },
+      { ticker: "XAR", name: "SPDR S&P Aerospace & Defense ETF", direction: "positive", weight: 0.8 },
+    ],
+  },
+  consumer_retail: {
+    consumer_strong: [
+      { ticker: "XRT", name: "SPDR S&P Retail ETF", direction: "positive", weight: 0.9 },
+      { ticker: "XLY", name: "Consumer Discretionary Select Sector SPDR", direction: "positive", weight: 0.8 },
+      { ticker: "AMZN", name: "Amazon", direction: "positive", weight: 0.6, type: "stock" },
+      { ticker: "WMT", name: "Walmart", direction: "positive", weight: 0.5, type: "stock" },
+    ],
+    consumer_weak: [
+      { ticker: "XRT", name: "SPDR S&P Retail ETF", direction: "negative", weight: 0.8 },
+      { ticker: "XLY", name: "Consumer Discretionary Select Sector SPDR", direction: "negative", weight: 0.7 },
+      { ticker: "XLP", name: "Consumer Staples Select Sector SPDR", direction: "positive", weight: 0.6 },
     ],
   },
 };
