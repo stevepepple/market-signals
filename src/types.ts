@@ -96,8 +96,12 @@ export interface Holding {
   type: "ETF" | "stock";
 }
 
-export interface PortfolioData {
+export interface PortfolioAccount {
   brokerage: string;
   last_updated: string;
   holdings: Holding[];
+}
+
+export interface PortfolioData {
+  accounts: PortfolioAccount[];
 }

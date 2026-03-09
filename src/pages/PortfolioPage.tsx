@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import type { Holding, PortfolioData, Recommendation } from "../types";
+import type { Holding, PortfolioData, PortfolioAccount, Recommendation } from "../types";
 
 function formatCurrency(n: number): string {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -24,12 +24,18 @@ export default function PortfolioPage({ recommendations }: { recommendations: Re
   const [sortKey, setSortKey] = useState<SortKey>("equity");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [typeFilter, setTypeFilter] = useState<"all" | "ETF" | "stock">("all");
+  const [accountFilter, setAccountFilter] = useState<string>("all");
 
   useEffect(() => {
     fetch(import.meta.env.BASE_URL + "data/portfolio.json")
       .then((r) => r.json())
-      .then((data: PortfolioData) => {
-        setPortfolio(data);
+      .then((data) => {
+        // Support both legacy single-account and new multi-account format
+        if (data.accounts) {
+          setPortfolio(data as PortfolioData);
+        } else {
+          setPortfolio({ accounts: [data as PortfolioAccount] });
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -43,9 +49,17 @@ export default function PortfolioPage({ recommendations }: { recommendations: Re
     return map;
   }, [recommendations]);
 
-  const holdings = useMemo(() => {
+  const allHoldings = useMemo(() => {
     if (!portfolio) return [];
-    let list = portfolio.holdings;
+    if (accountFilter === "all") {
+      return portfolio.accounts.flatMap((a) => a.holdings);
+    }
+    const account = portfolio.accounts.find((a) => a.brokerage === accountFilter);
+    return account ? account.holdings : [];
+  }, [portfolio, accountFilter]);
+
+  const holdings = useMemo(() => {
+    let list = allHoldings;
     if (typeFilter !== "all") list = list.filter((h) => h.type === typeFilter);
 
     return [...list].sort((a, b) => {
@@ -63,11 +77,11 @@ export default function PortfolioPage({ recommendations }: { recommendations: Re
       }
       return sortDir === "asc" ? (av as number) - (bv as number) : (bv as number) - (av as number);
     });
-  }, [portfolio, sortKey, sortDir, typeFilter]);
+  }, [allHoldings, sortKey, sortDir, typeFilter]);
 
   const stats = useMemo(() => {
     if (!portfolio) return null;
-    const h = portfolio.holdings;
+    const h = allHoldings;
     const totalEquity = h.reduce((s, x) => s + x.equity, 0);
     const totalReturn = h.reduce((s, x) => s + x.total_return, 0);
     const totalCost = h.reduce((s, x) => s + x.avg_cost * x.shares, 0);
@@ -76,7 +90,7 @@ export default function PortfolioPage({ recommendations }: { recommendations: Re
     const etfEquity = h.filter((x) => x.type === "ETF").reduce((s, x) => s + x.equity, 0);
     const stockEquity = h.filter((x) => x.type === "stock").reduce((s, x) => s + x.equity, 0);
     return { totalEquity, totalReturn, totalCost, winners, losers, etfEquity, stockEquity, count: h.length };
-  }, [portfolio]);
+  }, [portfolio, allHoldings]);
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortDir(sortDir === "asc" ? "desc" : "asc");
@@ -104,7 +118,7 @@ export default function PortfolioPage({ recommendations }: { recommendations: Re
       <header className="mb-8">
         <h1 className="text-3xl font-bold mb-1">My Portfolio</h1>
         <p className="text-gray-500 dark:text-gray-400">
-          {portfolio.brokerage} &middot; Last updated {portfolio.last_updated} &middot; {stats.count} holdings
+          {portfolio.accounts.map((a) => a.brokerage).join(" + ")} &middot; {stats.count} holdings
         </p>
       </header>
 
@@ -166,7 +180,34 @@ export default function PortfolioPage({ recommendations }: { recommendations: Re
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 mb-4">
+      <div className="flex items-center gap-4 mb-4 flex-wrap">
+        {portfolio.accounts.length > 1 && (
+          <div className="flex gap-1">
+            <button
+              onClick={() => setAccountFilter("all")}
+              className={`px-3 py-1 text-sm rounded transition-colors ${
+                accountFilter === "all"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+              }`}
+            >
+              All Accounts
+            </button>
+            {portfolio.accounts.map((a) => (
+              <button
+                key={a.brokerage}
+                onClick={() => setAccountFilter(a.brokerage)}
+                className={`px-3 py-1 text-sm rounded transition-colors ${
+                  accountFilter === a.brokerage
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                }`}
+              >
+                {a.brokerage}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="flex gap-1">
           {(["all", "ETF", "stock"] as const).map((t) => (
             <button

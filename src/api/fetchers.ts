@@ -61,13 +61,21 @@ export async function loadMarketData(options: {
   }
 }
 
-/** Load portfolio holdings from static JSON. */
+/** Load portfolio holdings from static JSON (supports multi-account format). */
 export async function loadPortfolioHoldings(): Promise<Set<string>> {
   try {
     const resp = await fetch(`${import.meta.env.BASE_URL}data/portfolio.json`);
     if (!resp.ok) return new Set();
     const data = await resp.json();
-    return new Set((data.holdings || []).map((h: { symbol: string }) => h.symbol));
+    const symbols = new Set<string>();
+    if (data.accounts) {
+      for (const account of data.accounts) {
+        for (const h of account.holdings || []) symbols.add(h.symbol);
+      }
+    } else if (data.holdings) {
+      for (const h of data.holdings) symbols.add(h.symbol);
+    }
+    return symbols;
   } catch {
     return new Set();
   }
