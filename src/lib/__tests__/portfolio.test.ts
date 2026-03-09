@@ -64,7 +64,8 @@ describe("generateRecommendations", () => {
     };
     const recs = generateRecommendations(signals);
     expect(recs.length).toBeGreaterThan(0);
-    expect(recs.some((r) => r.ticker === "TLT")).toBe(true);
+    // At avgPrice=0.80 rate_hike_bullish activates (SHV, KRE)
+    expect(recs.some((r) => r.ticker === "SHV" || r.ticker === "KRE")).toBe(true);
   });
 
   it("caps single theme contribution via MAX_THEME_WEIGHT", () => {
@@ -94,10 +95,10 @@ describe("generateRecommendations", () => {
     const recs = generateRecommendations(signals);
     // Crypto-only tickers (IBIT, ETHA, etc.) should not have outsized scores
     const ibit = recs.find((r) => r.ticker === "IBIT");
-    const tlt = recs.find((r) => r.ticker === "TLT");
+    const shv = recs.find((r) => r.ticker === "SHV");
     // Both should exist; the cap prevents crypto from totally dominating
     expect(ibit).toBeDefined();
-    expect(tlt).toBeDefined();
+    expect(shv).toBeDefined();
   });
 
   it("skips weak signals", () => {

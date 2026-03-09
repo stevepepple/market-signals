@@ -26,24 +26,24 @@ const REQUEST_TIMEOUT_MS = 15000;
 // Mirror of SIGNAL_THEMES from config.ts (keep in sync)
 const SIGNAL_THEMES: Record<string, { label: string; keywords: string[] }> = {
   fed_rate: { label: "Fed Interest Rate Decisions", keywords: ["fed", "interest rate", "fomc", "federal reserve", "rate cut", "rate hike"] },
-  inflation: { label: "Inflation / CPI", keywords: ["inflation", "cpi", "consumer price", "pce"] },
+  inflation: { label: "Inflation / CPI", keywords: ["inflation", "cpi", "consumer price", "pce", "annual inflation"] },
   recession: { label: "Recession Probability", keywords: ["recession", "gdp", "economic contraction", "nber", "economic growth", "gdp growth"] },
   tariffs_trade: { label: "Tariffs & Trade Policy", keywords: ["tariff", "trade war", "import duty", "trade policy", "trade deal"] },
   tech_regulation: { label: "Tech Regulation & Antitrust", keywords: ["antitrust", "tech regulation", "big tech", "breakup", "ftc"] },
   crypto: { label: "Crypto & Digital Assets", keywords: ["bitcoin", "crypto", "ethereum", "btc", "digital asset", "stablecoin"] },
-  energy_climate: { label: "Energy & Climate Policy", keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling", "crude oil", "natural gas", "opec", "oil production"] },
+  energy_climate: { label: "Energy & Climate Policy", keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling", "crude oil", "natural gas", "opec", "oil production", "oil (cl)", "brent crude"] },
   geopolitical: { label: "Geopolitical Risk", keywords: ["war", "conflict", "sanctions", "nato", "china", "taiwan", "russia", "ukraine", "iran", "strike", "ceasefire", "regime", "invasion", "military", "troops", "forces enter"] },
   ai_tech: { label: "AI & Technology", keywords: ["artificial intelligence", "ai", "openai", "gpu", "nvidia", "chatgpt", "agi"] },
   housing: { label: "Housing Market", keywords: ["housing", "home price", "mortgage", "real estate", "home sales"] },
-  employment: { label: "Jobs & Employment", keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment", "jobless claims", "jobs report", "job growth"] },
-  government_shutdown: { label: "Government Shutdown / Debt Ceiling", keywords: ["shutdown", "debt ceiling", "government funding", "default"] },
+  employment: { label: "Jobs & Employment", keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment", "jobless claims", "jobs report", "job growth", "us unemployment"] },
+  government_shutdown: { label: "Government Shutdown / Debt Ceiling", keywords: ["shutdown", "debt ceiling", "government funding", "dhs shutdown"] },
   healthcare_biotech: { label: "Healthcare & Biotech", keywords: ["drug approval", "fda", "medicare", "biotech", "pharmaceutical", "vaccine", "clinical trial", "medicaid"] },
   financials_banking: { label: "Financials & Banking", keywords: ["bank regulation", "fdic", "fintech", "credit", "banking crisis", "bank failure", "dodd-frank", "basel"] },
-  commodities_agriculture: { label: "Commodities & Agriculture", keywords: ["gold price", "silver", "wheat", "crop", "commodity", "corn", "soybean", "copper", "mining"] },
+  commodities_agriculture: { label: "Commodities & Agriculture", keywords: ["gold price", "gold (gc)", "silver", "wheat", "crop", "commodity", "corn", "soybean", "copper", "mining"] },
   defense_aerospace: { label: "Defense & Aerospace", keywords: ["defense spending", "military", "nato budget", "space", "pentagon", "arms deal", "missile", "drone"] },
   consumer_retail: { label: "Consumer & Retail", keywords: ["consumer spending", "retail sales", "consumer confidence", "holiday spending", "e-commerce", "consumer sentiment"] },
-  stock_market: { label: "Stock Market & Indices", keywords: ["s&p 500", "s&p500", "sp500", "spy", "nasdaq", "dow jones", "djia", "stock market", "russell 2000", "market crash", "bear market", "bull market", "equity market", "stock index"] },
-  treasury_bonds: { label: "Treasury & Bond Yields", keywords: ["treasury yield", "10-year yield", "bond yield", "treasury bond", "2-year yield", "yield curve", "10 year treasury", "30-year bond", "t-bill", "treasury rate"] },
+  stock_market: { label: "Stock Market & Indices", keywords: ["s&p 500", "s&p500", "sp500", "spy", "spx", "nasdaq", "dow jones", "djia", "stock market", "russell 2000", "market crash", "bear market", "bull market", "equity market", "stock index"] },
+  treasury_bonds: { label: "Treasury & Bond Yields", keywords: ["treasury yield", "10-year yield", "bond yield", "treasury bond", "2-year yield", "yield curve", "10 year treasury", "30-year bond", "t-bill", "treasury rate", "10-year treasury"] },
   dollar_forex: { label: "US Dollar & Forex", keywords: ["us dollar", "dollar index", "dxy", "forex", "euro dollar", "eur/usd", "usd/jpy", "currency", "dollar strength", "dollar weakness", "exchange rate"] },
 };
 
@@ -160,8 +160,13 @@ async function fetchKalshiFromUrl(baseUrl: string): Promise<NormalizedMarket[]> 
 
 async function fetchPolymarketMarkets(): Promise<NormalizedMarket[]> {
   const results: NormalizedMarket[] = [];
+  const seenIds = new Set<string>();
   let offset = 0;
   const limit = 100;
+
+  // Lower volume threshold for markets that match financial themes — these have
+  // less volume than sports/politics but are the ones that drive recommendations.
+  const MIN_VOLUME_FINANCIAL = 1000;
 
   try {
     while (true) {
@@ -182,6 +187,9 @@ async function fetchPolymarketMarkets(): Promise<NormalizedMarket[]> {
       if (!markets.length) break;
 
       for (const m of markets) {
+        const id = m.id ?? "";
+        if (seenIds.has(id)) continue;
+
         let outcomePrices = m.outcomePrices ?? [];
         if (typeof outcomePrices === "string") {
           try { outcomePrices = JSON.parse(outcomePrices); } catch { outcomePrices = []; }
@@ -189,11 +197,16 @@ async function fetchPolymarketMarkets(): Promise<NormalizedMarket[]> {
         const yesPrice = outcomePrices.length > 0 ? Number(outcomePrices[0]) : null;
         const noPrice = outcomePrices.length > 1 ? Number(outcomePrices[1]) : null;
         const volume = Number(m.volume24hr ?? 0);
-        if (volume < MIN_VOLUME_POLYMARKET) continue;
 
+        const themes = classifyMarket(m.question ?? "", "");
+        const isFinancial = themes.length > 0;
+        const minVol = isFinancial ? MIN_VOLUME_FINANCIAL : MIN_VOLUME_POLYMARKET;
+        if (volume < minVol) continue;
+
+        seenIds.add(id);
         const normalized: NormalizedMarket = {
           source: "polymarket",
-          id: m.id ?? "",
+          id,
           event_id: m.groupItemTitle ?? "",
           title: m.question ?? "",
           subtitle: "",
@@ -204,14 +217,14 @@ async function fetchPolymarketMarkets(): Promise<NormalizedMarket[]> {
           status: m.active ? "open" : "closed",
           close_time: m.endDate ?? "",
           url: `https://polymarket.com/event/${m.slug ?? ""}`,
-          themes: [],
+          themes,
         };
-        normalized.themes = classifyMarket(normalized.title, normalized.subtitle);
         results.push(normalized);
       }
 
       offset += limit;
-      if (results.length >= 500) break;
+      // Fetch deeper to capture financial markets in the long tail
+      if (offset >= 2000) break;
     }
   } catch (e) {
     console.error("Polymarket fetch error:", e);

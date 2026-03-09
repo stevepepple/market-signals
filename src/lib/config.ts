@@ -25,7 +25,7 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   inflation: {
     label: "Inflation / CPI",
-    keywords: ["inflation", "cpi", "consumer price", "pce"],
+    keywords: ["inflation", "cpi", "consumer price", "pce", "annual inflation"],
     kalshi_series: ["CPI", "INFL"],
   },
   recession: {
@@ -50,7 +50,7 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   energy_climate: {
     label: "Energy & Climate Policy",
-    keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling", "crude oil", "natural gas", "opec", "oil production"],
+    keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling", "crude oil", "natural gas", "opec", "oil production", "oil (cl)", "brent crude"],
     kalshi_series: [],
   },
   geopolitical: {
@@ -70,12 +70,12 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   employment: {
     label: "Jobs & Employment",
-    keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment", "jobless claims", "jobs report", "job growth"],
+    keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment", "jobless claims", "jobs report", "job growth", "us unemployment"],
     kalshi_series: ["JOBS", "UNRATE"],
   },
   government_shutdown: {
     label: "Government Shutdown / Debt Ceiling",
-    keywords: ["shutdown", "debt ceiling", "government funding", "default"],
+    keywords: ["shutdown", "debt ceiling", "government funding", "dhs shutdown"],
     kalshi_series: [],
   },
   healthcare_biotech: {
@@ -90,7 +90,7 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   commodities_agriculture: {
     label: "Commodities & Agriculture",
-    keywords: ["gold price", "silver", "wheat", "crop", "commodity", "corn", "soybean", "copper", "mining"],
+    keywords: ["gold price", "gold (gc)", "silver", "wheat", "crop", "commodity", "corn", "soybean", "copper", "mining"],
     kalshi_series: [],
   },
   defense_aerospace: {
@@ -105,12 +105,12 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   stock_market: {
     label: "Stock Market & Indices",
-    keywords: ["s&p 500", "s&p500", "sp500", "spy", "nasdaq", "dow jones", "djia", "stock market", "russell 2000", "market crash", "bear market", "bull market", "equity market", "stock index"],
+    keywords: ["s&p 500", "s&p500", "sp500", "spy", "spx", "nasdaq", "dow jones", "djia", "stock market", "russell 2000", "market crash", "bear market", "bull market", "equity market", "stock index"],
     kalshi_series: ["INX", "NASDAQ", "SPY"],
   },
   treasury_bonds: {
     label: "Treasury & Bond Yields",
-    keywords: ["treasury yield", "10-year yield", "bond yield", "treasury bond", "2-year yield", "yield curve", "10 year treasury", "30-year bond", "t-bill", "treasury rate"],
+    keywords: ["treasury yield", "10-year yield", "bond yield", "treasury bond", "2-year yield", "yield curve", "10 year treasury", "30-year bond", "t-bill", "treasury rate", "10-year treasury"],
     kalshi_series: [],
   },
   dollar_forex: {
@@ -153,6 +153,11 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
       { ticker: "XLY", name: "Consumer Discretionary Select Sector SPDR", direction: "negative", weight: 0.7 },
       { ticker: "IWM", name: "iShares Russell 2000 ETF", direction: "negative", weight: 0.8 },
     ],
+    recession_unlikely: [
+      { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "positive", weight: 0.6 },
+      { ticker: "IWM", name: "iShares Russell 2000 ETF", direction: "positive", weight: 0.6 },
+      { ticker: "XLY", name: "Consumer Discretionary Select Sector SPDR", direction: "positive", weight: 0.5 },
+    ],
   },
   tariffs_trade: {
     tariffs_increase: [
@@ -182,6 +187,11 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
       { ticker: "MSTR", name: "Strategy (MicroStrategy)", direction: "positive", weight: 0.6, type: "stock" },
       { ticker: "MARA", name: "MARA Holdings", direction: "positive", weight: 0.5, type: "stock" },
     ],
+    crypto_bearish: [
+      { ticker: "IBIT", name: "iShares Bitcoin Trust ETF", direction: "negative", weight: 0.7 },
+      { ticker: "COIN", name: "Coinbase Global", direction: "negative", weight: 0.6, type: "stock" },
+      { ticker: "MSTR", name: "Strategy (MicroStrategy)", direction: "negative", weight: 0.5, type: "stock" },
+    ],
   },
   energy_climate: {
     fossil_fuel_bullish: [
@@ -205,6 +215,11 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
       { ticker: "EEM", name: "iShares MSCI Emerging Markets ETF", direction: "negative", weight: 0.7 },
       { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "negative", weight: 0.3 },
     ],
+    risk_decline: [
+      { ticker: "EEM", name: "iShares MSCI Emerging Markets ETF", direction: "positive", weight: 0.6 },
+      { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "positive", weight: 0.3 },
+      { ticker: "GLD", name: "SPDR Gold Shares", direction: "negative", weight: 0.4 },
+    ],
   },
   ai_tech: {
     ai_growth: [
@@ -214,6 +229,11 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
       { ticker: "MSFT", name: "Microsoft", direction: "positive", weight: 0.7, type: "stock" },
       { ticker: "GOOGL", name: "Alphabet", direction: "positive", weight: 0.6, type: "stock" },
       { ticker: "BOTZ", name: "Global X Robotics & AI ETF", direction: "positive", weight: 0.7 },
+    ],
+    ai_decline: [
+      { ticker: "SMH", name: "VanEck Semiconductor ETF", direction: "negative", weight: 0.6 },
+      { ticker: "NVDA", name: "NVIDIA", direction: "negative", weight: 0.6, type: "stock" },
+      { ticker: "QQQ", name: "Invesco QQQ Trust", direction: "negative", weight: 0.4 },
     ],
   },
   housing: {
@@ -276,6 +296,10 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
     ],
   },
   defense_aerospace: {
+    defense_decline: [
+      { ticker: "ITA", name: "iShares U.S. Aerospace & Defense ETF", direction: "negative", weight: 0.5 },
+      { ticker: "XAR", name: "SPDR S&P Aerospace & Defense ETF", direction: "negative", weight: 0.5 },
+    ],
     defense_increase: [
       { ticker: "ITA", name: "iShares U.S. Aerospace & Defense ETF", direction: "positive", weight: 0.9 },
       { ticker: "LMT", name: "Lockheed Martin", direction: "positive", weight: 0.8, type: "stock" },

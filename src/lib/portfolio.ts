@@ -68,14 +68,15 @@ export function aggregateThemeSignals(markets: NormalizedMarket[]): Record<strin
 
 function isScenarioActive(scenarioKey: string, avgPrice: number): boolean {
   const key = scenarioKey.toLowerCase();
-  const highProbKeywords = ["likely", "increase", "elevated", "high", "downturn", "bullish", "strong", "growth"];
-  const lowProbKeywords = ["unlikely", "decrease", "low"];
+  // Check low-prob keywords FIRST so mixed keys like "rate_cut_bullish" resolve correctly
+  const lowProbKeywords = ["unlikely", "decrease", "low", "cut", "weak", "crisis", "downturn", "bearish", "decline"];
+  const highProbKeywords = ["likely", "increase", "elevated", "high", "bullish", "strong", "growth"];
 
-  for (const kw of highProbKeywords) {
-    if (key.includes(kw)) return avgPrice > 0.5;
-  }
   for (const kw of lowProbKeywords) {
     if (key.includes(kw)) return avgPrice < 0.5;
+  }
+  for (const kw of highProbKeywords) {
+    if (key.includes(kw)) return avgPrice > 0.5;
   }
   return avgPrice > 0.5;
 }
