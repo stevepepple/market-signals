@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { Routes, Route } from "react-router-dom";
 import type { Filters, NormalizedMarket, InsiderTrade } from "./types";
 import { SIGNAL_THEMES } from "./lib/config";
-import { loadMarketData, isStrongSignal, loadInsiderTrades } from "./api/fetchers";
+import { loadMarketData, isStrongSignal, loadInsiderTrades, loadPortfolioHoldings } from "./api/fetchers";
 import { aggregateThemeSignals, generateRecommendations, buildPortfolioSummary } from "./lib/portfolio";
+import Nav from "./components/Nav";
 import Sidebar from "./components/Sidebar";
 import SummaryMetrics from "./components/SummaryMetrics";
 import SignalThemes from "./components/SignalThemes";
@@ -10,6 +12,8 @@ import Recommendations from "./components/Recommendations";
 import SignalChart from "./components/SignalChart";
 import RawDataExplorer from "./components/RawDataExplorer";
 import InsiderTrades from "./components/InsiderTrades";
+import PortfolioPage from "./pages/PortfolioPage";
+import ApproachPage from "./pages/ApproachPage";
 
 const DEFAULT_FILTERS: Filters = {
   useKalshi: true,
@@ -21,62 +25,31 @@ const DEFAULT_FILTERS: Filters = {
   selectedTheme: "All",
 };
 
-export default function App() {
-  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
-  const [markets, setMarkets] = useState<NormalizedMarket[]>([]);
-  const [insiderTrades, setInsiderTrades] = useState<InsiderTrade[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState("");
-  const [dark, setDark] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
-
-  const loadData = useCallback(async () => {
-    if (!filters.useKalshi && !filters.usePolymarket) {
-      setError("Enable at least one data source (Kalshi or Polymarket).");
-      setMarkets([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [data, insider] = await Promise.all([
-        loadMarketData({
-          kalshi: filters.useKalshi,
-          polymarket: filters.usePolymarket,
-          volumeFilter: filters.filterVolume,
-        }),
-        loadInsiderTrades(),
-      ]);
-
-      setInsiderTrades(insider);
-
-      if (data.length > 0) {
-        setMarkets(data);
-        setLastRefresh(new Date().toLocaleTimeString());
-      } else {
-        setError("No market data available. Data is refreshed daily via cron.");
-        setMarkets([]);
-      }
-    } catch (e) {
-      console.warn("Failed to load market data:", e);
-      setError("Failed to load market data.");
-      setMarkets([]);
-    }
-
-    setLoading(false);
-  }, [filters.useKalshi, filters.usePolymarket, filters.filterVolume]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
+function Dashboard({
+  filters,
+  setFilters,
+  markets,
+  insiderTrades,
+  loading,
+  error,
+  lastRefresh,
+  handleRefresh,
+  dark,
+  onToggleDark,
+  heldSymbols,
+}: {
+  filters: Filters;
+  setFilters: (f: Filters) => void;
+  markets: NormalizedMarket[];
+  insiderTrades: InsiderTrade[];
+  loading: boolean;
+  error: string | null;
+  lastRefresh: string;
+  handleRefresh: () => void;
+  dark: boolean;
+  onToggleDark: () => void;
+  heldSymbols: Set<string>;
+}) {
   const themedMarkets = useMemo(
     () => markets.filter((m) => m.themes.length > 0),
     [markets],
@@ -135,11 +108,6 @@ export default function App() {
     });
   }, [recommendations, filters.showStocks, filters.showEtfs]);
 
-  const portfolioSummary = useMemo(
-    () => buildPortfolioSummary(filteredRecommendations),
-    [filteredRecommendations],
-  );
-
   const summaryMetrics = useMemo(() => ({
     totalMarkets: markets.length,
     themedMarkets: themedMarkets.length,
@@ -152,11 +120,6 @@ export default function App() {
     () => Object.values(SIGNAL_THEMES).map((t) => t.label).sort(),
     [],
   );
-
-  const handleRefresh = useCallback(() => {
-    setMarkets([]);
-    loadData();
-  }, [loadData]);
 
   const handleDownloadCsv = useCallback(() => {
     if (filteredRecommendations.length === 0) return;
@@ -177,7 +140,7 @@ export default function App() {
   }, [filteredRecommendations]);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+    <div className="flex min-h-screen">
       <Sidebar
         filters={filters}
         onFilterChange={setFilters}
@@ -185,7 +148,7 @@ export default function App() {
         onRefresh={handleRefresh}
         themeOptions={themeOptions}
         dark={dark}
-        onToggleDark={() => setDark(!dark)}
+        onToggleDark={onToggleDark}
       />
       <main className="flex-1 ml-64 p-8">
         <header className="mb-8">
@@ -227,7 +190,7 @@ export default function App() {
             <hr className="border-gray-200 dark:border-gray-800 my-8" />
 
             <h2 className="text-2xl font-semibold mb-4">Portfolio Recommendations</h2>
-            <Recommendations recommendations={filteredRecommendations} />
+            <Recommendations recommendations={filteredRecommendations} heldSymbols={heldSymbols} />
 
             <button
               onClick={handleDownloadCsv}
@@ -260,6 +223,119 @@ export default function App() {
           </>
         )}
       </main>
+    </div>
+  );
+}
+
+export default function App() {
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
+  const [markets, setMarkets] = useState<NormalizedMarket[]>([]);
+  const [insiderTrades, setInsiderTrades] = useState<InsiderTrade[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState("");
+  const [dark, setDark] = useState(false);
+  const [heldSymbols, setHeldSymbols] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
+
+  const loadData = useCallback(async () => {
+    if (!filters.useKalshi && !filters.usePolymarket) {
+      setError("Enable at least one data source (Kalshi or Polymarket).");
+      setMarkets([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [data, insider, held] = await Promise.all([
+        loadMarketData({
+          kalshi: filters.useKalshi,
+          polymarket: filters.usePolymarket,
+          volumeFilter: filters.filterVolume,
+        }),
+        loadInsiderTrades(),
+        loadPortfolioHoldings(),
+      ]);
+      setHeldSymbols(held);
+
+      setInsiderTrades(insider);
+
+      if (data.length > 0) {
+        setMarkets(data);
+        setLastRefresh(new Date().toLocaleTimeString());
+      } else {
+        setError("No market data available. Data is refreshed daily via cron.");
+        setMarkets([]);
+      }
+    } catch (e) {
+      console.warn("Failed to load market data:", e);
+      setError("Failed to load market data.");
+      setMarkets([]);
+    }
+
+    setLoading(false);
+  }, [filters.useKalshi, filters.usePolymarket, filters.filterVolume]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleRefresh = useCallback(() => {
+    setMarkets([]);
+    loadData();
+  }, [loadData]);
+
+  const toggleDark = useCallback(() => setDark((d) => !d), []);
+
+  // Compute recommendations for cross-page use
+  const themedMarkets = useMemo(
+    () => markets.filter((m) => m.themes.length > 0),
+    [markets],
+  );
+
+  const themeSignals = useMemo(
+    () => aggregateThemeSignals(themedMarkets),
+    [themedMarkets],
+  );
+
+  const recommendations = useMemo(
+    () => generateRecommendations(themeSignals),
+    [themeSignals],
+  );
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+      <Nav dark={dark} onToggleDark={toggleDark} />
+      <div className="pt-14">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Dashboard
+                filters={filters}
+                setFilters={setFilters}
+                markets={markets}
+                insiderTrades={insiderTrades}
+                loading={loading}
+                error={error}
+                lastRefresh={lastRefresh}
+                handleRefresh={handleRefresh}
+                dark={dark}
+                onToggleDark={toggleDark}
+                heldSymbols={heldSymbols}
+              />
+            }
+          />
+          <Route path="/portfolio" element={<div className="max-w-7xl mx-auto p-8"><PortfolioPage recommendations={recommendations} /></div>} />
+          <Route path="/approach" element={<div className="max-w-7xl mx-auto p-8"><ApproachPage /></div>} />
+        </Routes>
+      </div>
     </div>
   );
 }

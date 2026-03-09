@@ -3,6 +3,7 @@ import type { Recommendation } from "../types";
 
 interface RecommendationsProps {
   recommendations: Recommendation[];
+  heldSymbols?: Set<string>;
 }
 
 type Tab = "all" | "bullish" | "bearish";
@@ -16,6 +17,7 @@ function DirectionIcon({ direction }: { direction: "bullish" | "bearish" }) {
 
 export default function Recommendations({
   recommendations,
+  heldSymbols = new Set(),
 }: RecommendationsProps) {
   const [tab, setTab] = useState<Tab>("all");
 
@@ -103,7 +105,14 @@ export default function Recommendations({
                   className="border-b border-gray-100 even:bg-gray-50/50 dark:border-gray-800/50 dark:even:bg-gray-900/50"
                 >
                   <td className="py-2 px-3 font-medium text-gray-900 dark:text-gray-100">
-                    {r.ticker}
+                    <span className="flex items-center gap-1.5">
+                      {r.ticker}
+                      {heldSymbols.has(r.ticker) && (
+                        <span className="inline-flex items-center rounded bg-indigo-100 px-1.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300" title="You hold this position">
+                          Held
+                        </span>
+                      )}
+                    </span>
                   </td>
                   <td className="py-2 px-3 text-gray-600 dark:text-gray-300">{r.name}</td>
                   <td className="py-2 px-3 text-gray-500 dark:text-gray-400">{r.type}</td>

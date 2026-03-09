@@ -61,6 +61,18 @@ export async function loadMarketData(options: {
   }
 }
 
+/** Load portfolio holdings from static JSON. */
+export async function loadPortfolioHoldings(): Promise<Set<string>> {
+  try {
+    const resp = await fetch(`${import.meta.env.BASE_URL}data/portfolio.json`);
+    if (!resp.ok) return new Set();
+    const data = await resp.json();
+    return new Set((data.holdings || []).map((h: { symbol: string }) => h.symbol));
+  } catch {
+    return new Set();
+  }
+}
+
 /** Load insider trade data from the static JSON file (refreshed by cron). */
 export async function loadInsiderTrades(): Promise<InsiderTrade[]> {
   try {
