@@ -85,7 +85,7 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   financials_banking: {
     label: "Financials & Banking",
-    keywords: ["bank regulation", "fdic", "fintech", "credit", "banking crisis", "bank failure", "dodd-frank", "basel"],
+    keywords: ["bank regulation", "fdic", "fintech", "credit", "banking crisis", "bank failure", "dodd-frank", "basel", "sofi"],
     kalshi_series: [],
   },
   commodities_agriculture: {
@@ -115,7 +115,12 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   dollar_forex: {
     label: "US Dollar & Forex",
-    keywords: ["us dollar", "dollar index", "dxy", "forex", "euro dollar", "eur/usd", "usd/jpy", "currency", "dollar strength", "dollar weakness", "exchange rate"],
+    keywords: ["us dollar", "dollar index", "dxy", "forex", "euro dollar", "eur/usd", "usd/jpy", "currency", "dollar strength", "dollar weakness", "exchange rate", "bank of japan", "bank of england"],
+    kalshi_series: [],
+  },
+  volatility: {
+    label: "Market Volatility",
+    keywords: ["vix", "volatility index", "fear index"],
     kalshi_series: [],
   },
 };
@@ -528,6 +533,23 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
       { ticker: "FXE", name: "Invesco CurrencyShares Euro Trust", direction: "positive", weight: 0.6 },
       { ticker: "VEA", name: "Vanguard FTSE Developed Markets ETF", direction: "positive", weight: 0.5 },
       { ticker: "TSM", name: "Taiwan Semiconductor Manufacturing", direction: "positive", weight: 0.3, type: "stock" },
+    ],
+  },
+  volatility: {
+    volatility_high: [
+      { ticker: "VXX", name: "iPath Series B S&P 500 VIX Short-Term Futures ETN", direction: "positive", weight: 0.9 },
+      { ticker: "UVXY", name: "ProShares Ultra VIX Short-Term Futures ETF", direction: "positive", weight: 0.8 },
+      { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "negative", weight: 0.6 },
+      { ticker: "QQQ", name: "Invesco QQQ Trust", direction: "negative", weight: 0.6 },
+      { ticker: "GLD", name: "SPDR Gold Shares", direction: "positive", weight: 0.5 },
+      { ticker: "TLT", name: "iShares 20+ Year Treasury Bond ETF", direction: "positive", weight: 0.4 },
+      { ticker: "VOO", name: "Vanguard S&P 500 ETF", direction: "negative", weight: 0.5 },
+    ],
+    volatility_low: [
+      { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "positive", weight: 0.5 },
+      { ticker: "QQQ", name: "Invesco QQQ Trust", direction: "positive", weight: 0.5 },
+      { ticker: "VOO", name: "Vanguard S&P 500 ETF", direction: "positive", weight: 0.4 },
+      { ticker: "ESGV", name: "Vanguard ESG U.S. Stock ETF", direction: "positive", weight: 0.3 },
     ],
   },
 };
