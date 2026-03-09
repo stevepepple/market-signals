@@ -1,6 +1,6 @@
 import type { ThemeConfig, Investment } from "../types";
 
-export const KALSHI_BASE_URL = "https://api.elections.kalshi.com/trade-api/v2";
+export const KALSHI_BASE_URL = "https://trading-api.kalshi.com/trade-api/v2";
 export const POLYMARKET_GAMMA_URL = "https://gamma-api.polymarket.com";
 
 export const STRONG_SIGNAL_THRESHOLD = 0.75;
@@ -30,7 +30,7 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   recession: {
     label: "Recession Probability",
-    keywords: ["recession", "gdp", "economic contraction", "nber"],
+    keywords: ["recession", "gdp", "economic contraction", "nber", "economic growth", "gdp growth"],
     kalshi_series: ["RECESSION", "GDP"],
   },
   tariffs_trade: {
@@ -70,7 +70,7 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   employment: {
     label: "Jobs & Employment",
-    keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment"],
+    keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment", "jobless claims", "jobs report", "job growth"],
     kalshi_series: ["JOBS", "UNRATE"],
   },
   government_shutdown: {
@@ -101,6 +101,21 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   consumer_retail: {
     label: "Consumer & Retail",
     keywords: ["consumer spending", "retail sales", "consumer confidence", "holiday spending", "e-commerce", "consumer sentiment"],
+    kalshi_series: [],
+  },
+  stock_market: {
+    label: "Stock Market & Indices",
+    keywords: ["s&p 500", "s&p500", "sp500", "spy", "nasdaq", "dow jones", "djia", "stock market", "russell 2000", "market crash", "bear market", "bull market", "equity market", "stock index"],
+    kalshi_series: ["INX", "NASDAQ", "SPY"],
+  },
+  treasury_bonds: {
+    label: "Treasury & Bond Yields",
+    keywords: ["treasury yield", "10-year yield", "bond yield", "treasury bond", "2-year yield", "yield curve", "10 year treasury", "30-year bond", "t-bill", "treasury rate"],
+    kalshi_series: [],
+  },
+  dollar_forex: {
+    label: "US Dollar & Forex",
+    keywords: ["us dollar", "dollar index", "dxy", "forex", "euro dollar", "eur/usd", "usd/jpy", "currency", "dollar strength", "dollar weakness", "exchange rate"],
     kalshi_series: [],
   },
 };
@@ -280,6 +295,51 @@ export const THEME_INVESTMENTS: Record<string, Record<string, Investment[]>> = {
       { ticker: "XRT", name: "SPDR S&P Retail ETF", direction: "negative", weight: 0.8 },
       { ticker: "XLY", name: "Consumer Discretionary Select Sector SPDR", direction: "negative", weight: 0.7 },
       { ticker: "XLP", name: "Consumer Staples Select Sector SPDR", direction: "positive", weight: 0.6 },
+    ],
+  },
+  stock_market: {
+    market_bullish: [
+      { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "positive", weight: 0.9 },
+      { ticker: "QQQ", name: "Invesco QQQ Trust", direction: "positive", weight: 0.8 },
+      { ticker: "IWM", name: "iShares Russell 2000 ETF", direction: "positive", weight: 0.7 },
+      { ticker: "DIA", name: "SPDR Dow Jones Industrial Average ETF", direction: "positive", weight: 0.7 },
+      { ticker: "VTI", name: "Vanguard Total Stock Market ETF", direction: "positive", weight: 0.6 },
+    ],
+    market_downturn: [
+      { ticker: "SPY", name: "SPDR S&P 500 ETF Trust", direction: "negative", weight: 0.9 },
+      { ticker: "QQQ", name: "Invesco QQQ Trust", direction: "negative", weight: 0.8 },
+      { ticker: "IWM", name: "iShares Russell 2000 ETF", direction: "negative", weight: 0.9 },
+      { ticker: "GLD", name: "SPDR Gold Shares", direction: "positive", weight: 0.6 },
+      { ticker: "TLT", name: "iShares 20+ Year Treasury Bond ETF", direction: "positive", weight: 0.5 },
+      { ticker: "VXX", name: "iPath Series B S&P 500 VIX Short-Term Futures ETN", direction: "positive", weight: 0.7 },
+    ],
+  },
+  treasury_bonds: {
+    yields_increase: [
+      { ticker: "TBT", name: "ProShares UltraShort 20+ Year Treasury", direction: "positive", weight: 0.9 },
+      { ticker: "TLT", name: "iShares 20+ Year Treasury Bond ETF", direction: "negative", weight: 0.9 },
+      { ticker: "IEF", name: "iShares 7-10 Year Treasury Bond ETF", direction: "negative", weight: 0.7 },
+      { ticker: "KRE", name: "SPDR S&P Regional Banking ETF", direction: "positive", weight: 0.5 },
+    ],
+    yields_decrease: [
+      { ticker: "TLT", name: "iShares 20+ Year Treasury Bond ETF", direction: "positive", weight: 0.9 },
+      { ticker: "IEF", name: "iShares 7-10 Year Treasury Bond ETF", direction: "positive", weight: 0.7 },
+      { ticker: "VNQ", name: "Vanguard Real Estate ETF", direction: "positive", weight: 0.5 },
+      { ticker: "XLU", name: "Utilities Select Sector SPDR", direction: "positive", weight: 0.5 },
+    ],
+  },
+  dollar_forex: {
+    dollar_strong: [
+      { ticker: "UUP", name: "Invesco DB US Dollar Index Bullish Fund", direction: "positive", weight: 0.9 },
+      { ticker: "EEM", name: "iShares MSCI Emerging Markets ETF", direction: "negative", weight: 0.7 },
+      { ticker: "GLD", name: "SPDR Gold Shares", direction: "negative", weight: 0.5 },
+      { ticker: "FXE", name: "Invesco CurrencyShares Euro Trust", direction: "negative", weight: 0.6 },
+    ],
+    dollar_weak: [
+      { ticker: "UUP", name: "Invesco DB US Dollar Index Bullish Fund", direction: "negative", weight: 0.8 },
+      { ticker: "EEM", name: "iShares MSCI Emerging Markets ETF", direction: "positive", weight: 0.7 },
+      { ticker: "GLD", name: "SPDR Gold Shares", direction: "positive", weight: 0.6 },
+      { ticker: "FXE", name: "Invesco CurrencyShares Euro Trust", direction: "positive", weight: 0.6 },
     ],
   },
 };
