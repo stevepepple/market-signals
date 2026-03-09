@@ -32,6 +32,10 @@ jobs:
           if git diff --cached --quiet; then
             echo "No data changes — skipping commit."
           else
+            git stash
+            git pull --rebase origin main
+            git stash pop
+            git add public/data/markets.json public/data/insider-trades.json
             git commit -m "chore: refresh market data $(date -u +%Y-%m-%d)"
             git push
           fi
