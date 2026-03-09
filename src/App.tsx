@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import type { Filters, NormalizedMarket } from "./types";
+import type { Filters, NormalizedMarket, InsiderTrade } from "./types";
 import { SIGNAL_THEMES } from "./lib/config";
-import { loadMarketData, isStrongSignal } from "./api/fetchers";
+import { loadMarketData, isStrongSignal, loadInsiderTrades } from "./api/fetchers";
 import { aggregateThemeSignals, generateRecommendations, buildPortfolioSummary } from "./lib/portfolio";
 import Sidebar from "./components/Sidebar";
 import SummaryMetrics from "./components/SummaryMetrics";
@@ -9,6 +9,7 @@ import SignalThemes from "./components/SignalThemes";
 import Recommendations from "./components/Recommendations";
 import SignalChart from "./components/SignalChart";
 import RawDataExplorer from "./components/RawDataExplorer";
+import InsiderTrades from "./components/InsiderTrades";
 
 const DEFAULT_FILTERS: Filters = {
   useKalshi: true,
@@ -23,6 +24,7 @@ const DEFAULT_FILTERS: Filters = {
 export default function App() {
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [markets, setMarkets] = useState<NormalizedMarket[]>([]);
+  const [insiderTrades, setInsiderTrades] = useState<InsiderTrade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState("");
@@ -44,11 +46,16 @@ export default function App() {
     setError(null);
 
     try {
-      const data = await loadMarketData({
-        kalshi: filters.useKalshi,
-        polymarket: filters.usePolymarket,
-        volumeFilter: filters.filterVolume,
-      });
+      const [data, insider] = await Promise.all([
+        loadMarketData({
+          kalshi: filters.useKalshi,
+          polymarket: filters.usePolymarket,
+          volumeFilter: filters.filterVolume,
+        }),
+        loadInsiderTrades(),
+      ]);
+
+      setInsiderTrades(insider);
 
       if (data.length > 0) {
         setMarkets(data);
@@ -234,6 +241,14 @@ export default function App() {
 
             <h2 className="text-2xl font-semibold mb-4">Signal Strength by Theme</h2>
             <SignalChart themeSignals={filteredThemeSignals} dark={dark} />
+
+            <hr className="border-gray-200 dark:border-gray-800 my-8" />
+
+            <h2 className="text-2xl font-semibold mb-4">Insider Trades</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Top insider purchases and sales this week from SEC Form 4 filings
+            </p>
+            <InsiderTrades trades={insiderTrades} />
 
             <div className="mt-8">
               <RawDataExplorer

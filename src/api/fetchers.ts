@@ -1,4 +1,4 @@
-import type { NormalizedMarket } from "../types";
+import type { NormalizedMarket, InsiderTrade } from "../types";
 import {
   SIGNAL_THEMES,
   MIN_VOLUME_KALSHI,
@@ -56,6 +56,17 @@ export async function loadMarketData(options: {
 
       return true;
     });
+  } catch {
+    return [];
+  }
+}
+
+/** Load insider trade data from the static JSON file (refreshed by cron). */
+export async function loadInsiderTrades(): Promise<InsiderTrade[]> {
+  try {
+    const resp = await fetch(`${import.meta.env.BASE_URL}data/insider-trades.json`);
+    if (!resp.ok) return [];
+    return await resp.json();
   } catch {
     return [];
   }

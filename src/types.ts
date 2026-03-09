@@ -61,6 +61,20 @@ export interface PortfolioSummary {
   all_themes: string[];
 }
 
+export interface InsiderTrade {
+  filing_date: string;
+  trade_date: string;
+  ticker: string;
+  company_name: string;
+  insider_name: string;
+  title: string;
+  trade_type: "Purchase" | "Sale";
+  price: number;
+  qty: number;
+  value: number;
+  url: string;
+}
+
 export interface Filters {
   useKalshi: boolean;
   usePolymarket: boolean;

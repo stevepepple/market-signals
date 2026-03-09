@@ -12,6 +12,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = resolve(__dirname, "../public/data/markets.json");
+const INSIDER_OUTPUT_PATH = resolve(__dirname, "../public/data/insider-trades.json");
 
 const KALSHI_BASE_URL = "https://trading-api.kalshi.com/trade-api/v2";
 const POLYMARKET_GAMMA_URL = "https://gamma-api.polymarket.com";
@@ -197,12 +198,117 @@ async function fetchPolymarketMarkets(): Promise<NormalizedMarket[]> {
   return results;
 }
 
+interface InsiderTrade {
+  filing_date: string;
+  trade_date: string;
+  ticker: string;
+  company_name: string;
+  insider_name: string;
+  title: string;
+  trade_type: "Purchase" | "Sale";
+  price: number;
+  qty: number;
+  value: number;
+  url: string;
+}
+
+function parseInsiderTable(html: string, tradeType: "Purchase" | "Sale"): InsiderTrade[] {
+  const results: InsiderTrade[] = [];
+  // Find the tinytable tbody rows
+  const tbodyMatch = html.match(/<table[^>]*class="[^"]*tinytable[^"]*"[^>]*>[\s\S]*?<tbody>([\s\S]*?)<\/tbody>/i);
+  if (!tbodyMatch) return results;
+
+  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  let rowMatch;
+  while ((rowMatch = rowRegex.exec(tbodyMatch[1])) !== null) {
+    const cells: string[] = [];
+    const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+    let cellMatch;
+    while ((cellMatch = cellRegex.exec(rowMatch[1])) !== null) {
+      // Strip HTML tags and trim
+      cells.push(cellMatch[1].replace(/<[^>]+>/g, "").trim());
+    }
+    // Expected columns: [indicator], Filing Date, Trade Date, Ticker, Company, Insider, Title, Trade Type, Price, Qty, Owned, ΔOwn, Value
+    if (cells.length < 12) continue;
+
+    const ticker = cells[3].replace(/\s/g, "");
+    if (!ticker) continue;
+
+    const priceStr = cells[7].replace(/[$,]/g, "");
+    const qtyStr = cells[8].replace(/[+,]/g, "");
+    const valueStr = cells[11].replace(/[$,+]/g, "");
+
+    const price = parseFloat(priceStr) || 0;
+    const qty = parseInt(qtyStr) || 0;
+    const value = parseInt(valueStr) || 0;
+
+    if (value < 25000) continue; // Only significant trades
+
+    results.push({
+      filing_date: cells[1],
+      trade_date: cells[2],
+      ticker,
+      company_name: cells[4],
+      insider_name: cells[5],
+      title: cells[6],
+      trade_type: tradeType,
+      price,
+      qty: Math.abs(qty),
+      value: Math.abs(value),
+      url: `http://openinsider.com/screener?s=${encodeURIComponent(ticker)}&o=&pl=&ph=&ll=&lh=&fd=30&td=0&tdr=&fdlyl=&fdlyh=&daysago=&xp=1&vl=25000&vh=&sortcol=0&cnt=100`,
+    });
+  }
+  return results;
+}
+
+async function fetchInsiderTrades(): Promise<InsiderTrade[]> {
+  const results: InsiderTrade[] = [];
+  const pages = [
+    { url: "http://openinsider.com/top-insider-purchases-of-the-week", type: "Purchase" as const },
+    { url: "http://openinsider.com/top-insider-sales-of-the-week", type: "Sale" as const },
+  ];
+
+  for (const page of pages) {
+    try {
+      const resp = await fetchWithTimeout(page.url);
+      if (!resp.ok) {
+        console.error(`OpenInsider error for ${page.type}: ${resp.status}`);
+        continue;
+      }
+      const html = await resp.text();
+      const trades = parseInsiderTable(html, page.type);
+      results.push(...trades);
+      console.log(`Fetched ${trades.length} insider ${page.type.toLowerCase()}s from OpenInsider`);
+    } catch (e) {
+      console.error(`OpenInsider fetch error (${page.type}):`, e);
+    }
+  }
+
+  return results.sort((a, b) => b.value - a.value);
+}
+
+function writeIfChanged(path: string, newData: string, label: string): void {
+  let existingData = "";
+  try {
+    existingData = readFileSync(path, "utf-8");
+  } catch {
+    // File doesn't exist yet
+  }
+  if (existingData === newData) {
+    console.log(`${label}: no changes detected — skipping write.`);
+  } else {
+    writeFileSync(path, newData);
+    console.log(`${label}: wrote to ${path}`);
+  }
+}
+
 async function main() {
   console.log("Fetching market data...");
 
-  const [kalshi, polymarket] = await Promise.all([
+  const [kalshi, polymarket, insiderTrades] = await Promise.all([
     fetchKalshiMarkets(),
     fetchPolymarketMarkets(),
+    fetchInsiderTrades(),
   ]);
 
   const allMarkets = [...kalshi, ...polymarket];
@@ -210,23 +316,10 @@ async function main() {
 
   const themed = allMarkets.filter((m) => m.themes.length > 0);
   console.log(`${themed.length} markets classified into themes`);
+  console.log(`${insiderTrades.length} insider trades from OpenInsider`);
 
-  // Check if data actually changed
-  let existingData = "";
-  try {
-    existingData = readFileSync(OUTPUT_PATH, "utf-8");
-  } catch {
-    // File doesn't exist yet
-  }
-
-  const newData = JSON.stringify(allMarkets, null, 2);
-  if (existingData === newData) {
-    console.log("No changes detected — skipping write.");
-    process.exit(0);
-  }
-
-  writeFileSync(OUTPUT_PATH, newData);
-  console.log(`Wrote ${allMarkets.length} markets to ${OUTPUT_PATH}`);
+  writeIfChanged(OUTPUT_PATH, JSON.stringify(allMarkets, null, 2), "Markets");
+  writeIfChanged(INSIDER_OUTPUT_PATH, JSON.stringify(insiderTrades, null, 2), "Insider trades");
 }
 
 main().catch((e) => {
