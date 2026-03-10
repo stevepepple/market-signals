@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { Routes, Route } from "react-router-dom";
 import type { Filters, NormalizedMarket, InsiderTrade } from "./types";
+import type { EconomicIndicator, CalendarEvent, SentimentReading, NewsItem } from "./types/economic";
 import { SIGNAL_THEMES } from "./lib/config";
 import { loadMarketData, isStrongSignal, loadInsiderTrades, loadPortfolioHoldings } from "./api/fetchers";
+import { loadEconomicData, loadCalendarData, loadSentimentData, loadNewsData } from "./api/loaders";
 import { aggregateThemeSignals, generateRecommendations, buildPortfolioSummary } from "./lib/portfolio";
 import Nav from "./components/Nav";
 import Sidebar from "./components/Sidebar";
@@ -12,6 +14,10 @@ import Recommendations from "./components/Recommendations";
 import SignalChart from "./components/SignalChart";
 import RawDataExplorer from "./components/RawDataExplorer";
 import InsiderTrades from "./components/InsiderTrades";
+import EconomicPulse from "./components/EconomicPulse";
+import SentimentGauge from "./components/SentimentGauge";
+import EventsTimeline from "./components/EventsTimeline";
+import NewsFeed from "./components/NewsFeed";
 import PortfolioPage from "./pages/PortfolioPage";
 import ApproachPage from "./pages/ApproachPage";
 
@@ -37,6 +43,10 @@ function Dashboard({
   dark,
   onToggleDark,
   heldSymbols,
+  economicIndicators,
+  calendarEvents,
+  sentimentReadings,
+  newsItems,
 }: {
   filters: Filters;
   setFilters: (f: Filters) => void;
@@ -49,6 +59,10 @@ function Dashboard({
   dark: boolean;
   onToggleDark: () => void;
   heldSymbols: Set<string>;
+  economicIndicators: EconomicIndicator[];
+  calendarEvents: CalendarEvent[];
+  sentimentReadings: SentimentReading[];
+  newsItems: NewsItem[];
 }) {
   const themedMarkets = useMemo(
     () => markets.filter((m) => m.themes.length > 0),
@@ -189,6 +203,16 @@ function Dashboard({
 
             <hr className="border-gray-200 dark:border-gray-800 my-8" />
 
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+              <SentimentGauge readings={sentimentReadings} />
+              <EconomicPulse indicators={economicIndicators} />
+              <EventsTimeline events={calendarEvents} />
+            </div>
+
+            <NewsFeed news={newsItems} />
+
+            <hr className="border-gray-200 dark:border-gray-800 my-8" />
+
             <h2 className="text-2xl font-semibold mb-4">Portfolio Recommendations</h2>
             <Recommendations recommendations={filteredRecommendations} heldSymbols={heldSymbols} />
 
@@ -236,6 +260,10 @@ export default function App() {
   const [lastRefresh, setLastRefresh] = useState("");
   const [dark, setDark] = useState(false);
   const [heldSymbols, setHeldSymbols] = useState<Set<string>>(new Set());
+  const [economicIndicators, setEconomicIndicators] = useState<EconomicIndicator[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+  const [sentimentReadings, setSentimentReadings] = useState<SentimentReading[]>([]);
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -253,7 +281,7 @@ export default function App() {
     setError(null);
 
     try {
-      const [data, insider, held] = await Promise.all([
+      const [data, insider, held, economic, calendar, sentiment, news] = await Promise.all([
         loadMarketData({
           kalshi: filters.useKalshi,
           polymarket: filters.usePolymarket,
@@ -261,8 +289,16 @@ export default function App() {
         }),
         loadInsiderTrades(),
         loadPortfolioHoldings(),
+        loadEconomicData(),
+        loadCalendarData(),
+        loadSentimentData(),
+        loadNewsData(),
       ]);
       setHeldSymbols(held);
+      setEconomicIndicators(economic);
+      setCalendarEvents(calendar);
+      setSentimentReadings(sentiment);
+      setNewsItems(news);
 
       setInsiderTrades(insider);
 
@@ -329,6 +365,10 @@ export default function App() {
                 dark={dark}
                 onToggleDark={toggleDark}
                 heldSymbols={heldSymbols}
+                economicIndicators={economicIndicators}
+                calendarEvents={calendarEvents}
+                sentimentReadings={sentimentReadings}
+                newsItems={newsItems}
               />
             }
           />

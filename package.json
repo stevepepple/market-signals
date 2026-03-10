@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "fetch-data": "tsx scripts/fetch-markets.ts"
+    "fetch-data": "tsx scripts/fetch-all.ts"
   },
   "dependencies": {
     "react": "^19.0.0",
