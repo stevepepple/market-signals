@@ -55,12 +55,12 @@ export const SIGNAL_THEMES: Record<string, ThemeConfig> = {
   },
   geopolitical: {
     label: "Geopolitical Risk",
-    keywords: ["war", "conflict", "sanctions", "nato", "china", "taiwan", "russia", "ukraine", "iran", "strike", "ceasefire", "regime", "invasion", "military", "troops", "forces enter"],
+    keywords: ["\\bwar\\b", "\\bconflict\\b", "sanctions", "\\bnato\\b", "\\bchina\\b", "taiwan", "russia", "ukraine", "\\biran\\b", "\\bstrike\\b", "ceasefire", "\\bregime\\b", "invasion", "\\bmilitary\\b", "\\btroops\\b", "forces enter"],
     kalshi_series: [],
   },
   ai_tech: {
     label: "AI & Technology",
-    keywords: ["artificial intelligence", "ai", "openai", "gpu", "nvidia", "chatgpt", "agi", "nvda", "anthropic", "databricks", "perplexity"],
+    keywords: ["artificial intelligence", "\\bai\\b", "openai", "\\bgpu\\b", "nvidia", "chatgpt", "\\bagi\\b", "nvda", "anthropic", "databricks", "perplexity"],
     kalshi_series: [],
   },
   housing: {

@@ -5,18 +5,74 @@ import {
   MIN_VOLUME_POLYMARKET,
 } from "../lib/config";
 
+/** Patterns that indicate sports, entertainment, or other non-financial markets. */
+const EXCLUDE_PATTERNS = [
+  /\bvs\.\s/i,                    // "Team vs. Team"
+  /\bspread:\s/i,                 // "Spread: Team (-3.5)"
+  /\bo\/u\s\d/i,                  // "O/U 227.5"
+  /\bmoneyline\b/i,
+  /\bnba\b/i, /\bnfl\b/i, /\bmlb\b/i, /\bnhl\b/i, /\bmls\b/i, /\bufc\b/i,
+  /\bserie a\b/i, /\bpremier league\b/i, /\bla liga\b/i, /\bbundesliga\b/i,
+  /\bsuper bowl\b/i, /\bworld series\b/i, /\bstanley cup\b/i,
+  /\bgrand prix\b/i, /\bformula [12]\b/i,
+  /win the \d{4}.*\b(mvp|finals|championship|playoff|conference|trophy|cup|bowl)\b/i,
+  /\b(oscar|emmy|grammy|golden globe|academy award|best picture|best director|best actor|best actress)\b/i,
+  /\bnobel\b/i,
+  /\bballon d'or\b/i,
+  /win the \d{4}.*(presidential|democratic|republican|gubernatorial|senate|governor)\b/i,
+  /\bcounter-strike\b/i, /\besports?\b/i, /\b(bo[123])\b/i,
+];
+
+function isNonFinancialMarket(title: string): boolean {
+  return EXCLUDE_PATTERNS.some((pattern) => pattern.test(title));
+}
+
+function keywordMatches(text: string, keyword: string): boolean {
+  if (keyword.includes("\\b")) {
+    // Keyword uses word-boundary markers — treat as regex
+    try {
+      return new RegExp(keyword, "i").test(text);
+    } catch {
+      return false;
+    }
+  }
+  return text.includes(keyword.toLowerCase());
+}
+
 export function classifyMarket(market: NormalizedMarket): string[] {
+  if (isNonFinancialMarket(market.title)) return [];
+
   const text = `${market.title} ${market.subtitle}`.toLowerCase();
   const matched: string[] = [];
   for (const [themeKey, config] of Object.entries(SIGNAL_THEMES)) {
     for (const keyword of config.keywords) {
-      if (text.includes(keyword.toLowerCase())) {
+      if (keywordMatches(text, keyword)) {
         matched.push(themeKey);
         break;
       }
     }
   }
   return matched;
+}
+
+/** Classify and return matched keywords for transparency. */
+export function classifyMarketWithReasons(market: NormalizedMarket): { themes: string[]; matched_keywords: Record<string, string> } {
+  if (isNonFinancialMarket(market.title)) return { themes: [], matched_keywords: {} };
+
+  const text = `${market.title} ${market.subtitle}`.toLowerCase();
+  const themes: string[] = [];
+  const matched_keywords: Record<string, string> = {};
+
+  for (const [themeKey, config] of Object.entries(SIGNAL_THEMES)) {
+    for (const keyword of config.keywords) {
+      if (keywordMatches(text, keyword)) {
+        themes.push(themeKey);
+        matched_keywords[themeKey] = keyword.replace(/\\b/g, "");
+        break;
+      }
+    }
+  }
+  return { themes, matched_keywords };
 }
 
 export function isStrongSignal(market: NormalizedMarket, threshold = 0.75): boolean {

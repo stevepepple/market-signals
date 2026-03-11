@@ -73,8 +73,8 @@ const SIGNAL_THEMES: Record<string, { label: string; keywords: string[] }> = {
   tech_regulation: { label: "Tech Regulation & Antitrust", keywords: ["antitrust", "tech regulation", "big tech", "breakup", "ftc"] },
   crypto: { label: "Crypto & Digital Assets", keywords: ["bitcoin", "crypto", "ethereum", "btc", "digital asset", "stablecoin"] },
   energy_climate: { label: "Energy & Climate Policy", keywords: ["oil price", "energy", "climate", "renewable", "ev mandate", "drilling", "crude oil", "natural gas", "opec", "oil production", "oil (cl)", "brent crude"] },
-  geopolitical: { label: "Geopolitical Risk", keywords: ["war", "conflict", "sanctions", "nato", "china", "taiwan", "russia", "ukraine", "iran", "strike", "ceasefire", "regime", "invasion", "military", "troops", "forces enter"] },
-  ai_tech: { label: "AI & Technology", keywords: ["artificial intelligence", "ai", "openai", "gpu", "nvidia", "chatgpt", "agi", "nvda", "anthropic", "databricks", "perplexity"] },
+  geopolitical: { label: "Geopolitical Risk", keywords: ["\\bwar\\b", "\\bconflict\\b", "sanctions", "\\bnato\\b", "\\bchina\\b", "taiwan", "russia", "ukraine", "\\biran\\b", "\\bstrike\\b", "ceasefire", "\\bregime\\b", "invasion", "\\bmilitary\\b", "\\btroops\\b", "forces enter"] },
+  ai_tech: { label: "AI & Technology", keywords: ["artificial intelligence", "\\bai\\b", "openai", "\\bgpu\\b", "nvidia", "chatgpt", "\\bagi\\b", "nvda", "anthropic", "databricks", "perplexity"] },
   housing: { label: "Housing Market", keywords: ["housing", "home price", "mortgage", "real estate", "home sales"] },
   employment: { label: "Jobs & Employment", keywords: ["jobs", "unemployment", "nonfarm", "payroll", "labor", "employment", "jobless claims", "jobs report", "job growth", "us unemployment"] },
   government_shutdown: { label: "Government Shutdown / Debt Ceiling", keywords: ["shutdown", "debt ceiling", "government funding", "dhs shutdown"] },
@@ -170,12 +170,47 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** Patterns that indicate sports, entertainment, or other non-financial markets. */
+const EXCLUDE_PATTERNS = [
+  /\bvs\.\s/i,
+  /\bspread:\s/i,
+  /\bo\/u\s\d/i,
+  /\bmoneyline\b/i,
+  /\bnba\b/i, /\bnfl\b/i, /\bmlb\b/i, /\bnhl\b/i, /\bmls\b/i, /\bufc\b/i,
+  /\bserie a\b/i, /\bpremier league\b/i, /\bla liga\b/i, /\bbundesliga\b/i,
+  /\bsuper bowl\b/i, /\bworld series\b/i, /\bstanley cup\b/i,
+  /\bgrand prix\b/i, /\bformula [12]\b/i,
+  /win the \d{4}.*\b(mvp|finals|championship|playoff|conference|trophy|cup|bowl)\b/i,
+  /\b(oscar|emmy|grammy|golden globe|academy award|best picture|best director|best actor|best actress)\b/i,
+  /\bnobel\b/i,
+  /\bballon d'or\b/i,
+  /win the \d{4}.*(presidential|democratic|republican|gubernatorial|senate|governor)\b/i,
+  /\bcounter-strike\b/i, /\besports?\b/i, /\b(bo[123])\b/i,
+];
+
+function isNonFinancialMarket(title: string): boolean {
+  return EXCLUDE_PATTERNS.some((pattern) => pattern.test(title));
+}
+
+function keywordMatches(text: string, keyword: string): boolean {
+  if (keyword.includes("\\b")) {
+    try {
+      return new RegExp(keyword, "i").test(text);
+    } catch {
+      return false;
+    }
+  }
+  return text.includes(keyword.toLowerCase());
+}
+
 function classifyMarket(title: string, subtitle: string): string[] {
+  if (isNonFinancialMarket(title)) return [];
+
   const text = `${title} ${subtitle}`.toLowerCase();
   const matched: string[] = [];
   for (const [themeKey, config] of Object.entries(SIGNAL_THEMES)) {
     for (const keyword of config.keywords) {
-      if (text.includes(keyword.toLowerCase())) {
+      if (keywordMatches(text, keyword)) {
         matched.push(themeKey);
         break;
       }

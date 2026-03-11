@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ThemeSignal } from "../types";
+import { classifyMarketWithReasons } from "../api/fetchers";
 
 interface SignalThemesProps {
   themeSignals: Record<string, ThemeSignal>;
@@ -12,7 +13,7 @@ const strengthColors: Record<string, string> = {
   none: "bg-gray-500",
 };
 
-function ThemeCard({ signal }: { signal: ThemeSignal }) {
+function ThemeCard({ signal, themeKey }: { signal: ThemeSignal; themeKey: string }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -50,30 +51,39 @@ function ThemeCard({ signal }: { signal: ThemeSignal }) {
 
           {open && (
             <ul className="mt-2 space-y-2">
-              {signal.top_markets.slice(0, 3).map((m) => (
-                <li
-                  key={m.id}
-                  className="text-sm border-t border-gray-200 dark:border-gray-800 pt-2"
-                >
-                  <a
-                    href={m.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+              {signal.top_markets.slice(0, 5).map((m) => {
+                const { matched_keywords } = classifyMarketWithReasons(m);
+                const matchedKw = matched_keywords[themeKey];
+                return (
+                  <li
+                    key={m.id}
+                    className="text-sm border-t border-gray-200 dark:border-gray-800 pt-2"
                   >
-                    {m.title.length > 60
-                      ? m.title.slice(0, 60) + "\u2026"
-                      : m.title}
-                  </a>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {m.yes_price != null
-                      ? Math.round(m.yes_price * 100) + "%"
-                      : "N/A"}{" "}
-                    &middot; {m.source} &middot;{" "}
-                    {m.volume_24h.toLocaleString()} vol
-                  </p>
-                </li>
-              ))}
+                    <a
+                      href={m.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300"
+                    >
+                      {m.title.length > 80
+                        ? m.title.slice(0, 80) + "\u2026"
+                        : m.title}
+                    </a>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      {m.yes_price != null
+                        ? Math.round(m.yes_price * 100) + "%"
+                        : "N/A"}{" "}
+                      &middot; {m.source} &middot;{" "}
+                      {m.volume_24h.toLocaleString()} vol
+                      {matchedKw && (
+                        <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">
+                          &middot; matched: &ldquo;{matchedKw}&rdquo;
+                        </span>
+                      )}
+                    </p>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -83,8 +93,8 @@ function ThemeCard({ signal }: { signal: ThemeSignal }) {
 }
 
 export default function SignalThemes({ themeSignals }: SignalThemesProps) {
-  const sorted = Object.values(themeSignals).sort(
-    (a, b) => b.magnitude - a.magnitude
+  const sorted = Object.entries(themeSignals).sort(
+    ([, a], [, b]) => b.magnitude - a.magnitude
   );
 
   if (sorted.length === 0) {
@@ -93,8 +103,8 @@ export default function SignalThemes({ themeSignals }: SignalThemesProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {sorted.map((s) => (
-        <ThemeCard key={s.label} signal={s} />
+      {sorted.map(([key, s]) => (
+        <ThemeCard key={key} signal={s} themeKey={key} />
       ))}
     </div>
   );
