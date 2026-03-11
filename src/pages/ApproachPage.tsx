@@ -103,8 +103,10 @@ export default function ApproachPage() {
               rather than selling outright
             </li>
             <li>
-              <strong>Thematic diversification</strong> — Spread across themes (AI, clean energy,
-              cloud, ESG, dividends) with small positions and broad exposure to reduce single-stock risk
+              <strong>Thematic diversification with an impact tilt</strong> — Spread across themes
+              with small positions and broad exposure. Prefer ESG-screened and impact-oriented funds
+              (clean energy, water, sustainable agriculture) where financially competitive, to reduce
+              tech concentration and align with values
             </li>
             <li>
               <strong>Low-frequency rebalancing</strong> — Review and adjust monthly or quarterly,
