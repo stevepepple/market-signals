@@ -75,32 +75,45 @@ export default function ApproachPage() {
         <h2 className="text-xl font-semibold mb-4">Philosophy</h2>
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 space-y-4 text-gray-700 dark:text-gray-300">
           <p>
-            This portfolio follows a <strong>thematic, signal-driven approach</strong> that combines
-            prediction market data with traditional investment analysis. The core idea: prediction markets
-            aggregate information efficiently, and shifts in market probabilities can signal upcoming
-            sector rotations before they show up in price.
+            This portfolio uses a <strong>modified dollar cost averaging</strong> strategy informed by
+            prediction market data and valuation signals. The core idea: make regular contributions
+            but adjust the pace based on market conditions — buy more on dips, slow down when things
+            look frothy, and hedge when riding momentum into potentially overvalued territory.
+          </p>
+          <p>
+            This is a <strong>taxable brokerage account</strong> managed on a monthly or quarterly basis,
+            not a retirement account. The goal is a mostly hands-off system that leverages data gathering
+            and signal processing to make better-informed, relatively safe bets.
           </p>
           <p>Key principles:</p>
           <ul className="list-disc pl-6 space-y-2">
             <li>
-              <strong>ESG-forward allocation</strong> — Significant core holdings in ESG-screened ETFs
-              (ESGV, USSG, DSI, SUSA) reflecting a values-aligned investment approach
+              <strong>Tempo-adjusted DCA</strong> — Regular contributions are the baseline, but increase
+              allocation when markets or sectors dip, and slow contributions to positions that appear
+              overvalued or bubbly
             </li>
             <li>
-              <strong>Thematic diversification</strong> — Spread across AI/robotics, clean energy,
-              cloud/software, travel, and dividends to capture multiple secular trends
+              <strong>Buy the dip</strong> — When the overall market or a sector is down, increase
+              contributions. Use prediction market sentiment and price-based signals to identify dips
             </li>
             <li>
-              <strong>Small positions, broad exposure</strong> — Fractional shares across many names
-              rather than concentrated bets, reducing single-stock risk
+              <strong>Hedge the froth</strong> — When riding momentum into bubbly territory, allocate
+              3–8% of the position to downside protection (inverse ETFs, puts, or uncorrelated assets)
+              rather than selling outright
             </li>
             <li>
-              <strong>Signal overlay</strong> — Use prediction market signals to inform timing
-              of additions and trims, not as the sole basis for decisions
+              <strong>Thematic diversification</strong> — Spread across themes (AI, clean energy,
+              cloud, ESG, dividends) with small positions and broad exposure to reduce single-stock risk
             </li>
             <li>
-              <strong>Long-term horizon</strong> — Core positions are held through volatility;
-              signals are used for tactical adjustments at the margin
+              <strong>Low-frequency rebalancing</strong> — Review and adjust monthly or quarterly,
+              not daily. Core positions are held through volatility; signals inform tactical
+              adjustments at the margin
+            </li>
+            <li>
+              <strong>Data over gut</strong> — Lean on prediction market signals, insider trade data,
+              and valuation indicators rather than intuition. The edge is in gathering and processing
+              complete datasets
             </li>
           </ul>
         </div>
@@ -138,30 +151,83 @@ export default function ApproachPage() {
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">How Market Signals Inform Decisions</h2>
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 space-y-4 text-gray-700 dark:text-gray-300">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <p className="text-sm mb-2">
+            Signals adjust the <em>pace and direction</em> of contributions, not binary buy/sell decisions.
+            The default action is always to continue regular DCA contributions.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="border border-green-200 dark:border-green-800 rounded-lg p-4">
-              <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">Consider Buying</h3>
+              <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">Accelerate</h3>
               <ul className="text-sm space-y-1">
-                <li>Strong bullish signal aligns with existing thesis</li>
+                <li>Market or sector is in a dip</li>
+                <li>Prediction markets signal fear or uncertainty</li>
                 <li>Position is below target allocation</li>
-                <li>Multiple themes confirm the direction</li>
+                <li>Insider buying activity detected</li>
+              </ul>
+            </div>
+            <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">Steady DCA</h3>
+              <ul className="text-sm space-y-1">
+                <li>No strong signals in either direction</li>
+                <li>Position near target allocation</li>
+                <li>Normal market conditions</li>
               </ul>
             </div>
             <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-              <h3 className="font-semibold text-amber-700 dark:text-amber-400 mb-2">Hold / Monitor</h3>
+              <h3 className="font-semibold text-amber-700 dark:text-amber-400 mb-2">Slow / Hedge</h3>
               <ul className="text-sm space-y-1">
-                <li>Mixed or weak signals</li>
-                <li>Position at target allocation</li>
-                <li>No clear catalyst from prediction markets</li>
+                <li>Position looks overvalued or frothy</li>
+                <li>Momentum is strong but unsustainable</li>
+                <li>Reduce new contributions, add 3–8% hedge</li>
+                <li>Consider inverse ETFs or uncorrelated assets</li>
               </ul>
             </div>
             <div className="border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">Consider Selling</h3>
+              <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">Pause / Trim</h3>
               <ul className="text-sm space-y-1">
                 <li>Strong bearish signal against thesis</li>
                 <li>Position is significantly overweight</li>
-                <li>Large unrealized loss with negative outlook</li>
+                <li>Insider selling with negative outlook</li>
+                <li>Stop new contributions; consider trimming</li>
               </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Signal sources */}
+      <section className="mb-10">
+        <h2 className="text-xl font-semibold mb-4">Signal Sources</h2>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6 text-gray-700 dark:text-gray-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-semibold mb-2">Prediction Markets</h3>
+              <p className="text-sm mb-2">
+                Kalshi and Polymarket probabilities aggregated across 20 themes (Fed rate, recession,
+                tariffs, AI, crypto, etc.). Shifts in probability signal changing sentiment before
+                price moves.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Insider Trades</h3>
+              <p className="text-sm mb-2">
+                SEC Form 4 filings from OpenInsider — large insider purchases are a bullish signal,
+                especially when clustered. Insider selling is weaker but relevant at extremes.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Valuation &amp; Momentum</h3>
+              <p className="text-sm mb-2 italic text-gray-400">
+                Coming soon — price vs. moving averages, RSI, sector-relative P/E ratios to identify
+                dips and frothy conditions.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Economic Indicators</h3>
+              <p className="text-sm mb-2 italic text-gray-400">
+                Coming soon — FRED data (unemployment, CPI, GDP) and sentiment indices to provide
+                macro context for DCA pacing.
+              </p>
             </div>
           </div>
         </div>
