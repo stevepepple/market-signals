@@ -32,6 +32,9 @@ export const THEME_ETFS: Record<string, { ticker: string; name: string }> = {
   defense: { ticker: "ITA", name: "US Aerospace & Defense" },
   commodities: { ticker: "DBC", name: "Invesco DB Commodity" },
   volatility: { ticker: "VIXY", name: "ProShares VIX Short-Term" },
+  esg_broad: { ticker: "ESGV", name: "Vanguard ESG US Stock" },
+  clean_energy_us: { ticker: "QCLN", name: "First Trust NASDAQ Clean Edge" },
+  water: { ticker: "PHO", name: "Invesco Water Resources" },
 };
 
 interface YahooChartResult {

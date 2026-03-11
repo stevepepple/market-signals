@@ -180,5 +180,47 @@
     "drawdown_from_high": -63.3,
     "date": "2026-03-11",
     "dca_signal": "accelerate"
+  },
+  {
+    "ticker": "ESGV",
+    "name": "Vanguard ESG US Stock",
+    "theme": "esg_broad",
+    "price": 117.56,
+    "sma_50": 120.63,
+    "sma_200": 116.3,
+    "rsi_14": 42.1,
+    "price_vs_sma50_pct": -2.5,
+    "price_vs_sma200_pct": 1.1,
+    "drawdown_from_high": -4.7,
+    "date": "2026-03-11",
+    "dca_signal": "steady"
+  },
+  {
+    "ticker": "QCLN",
+    "name": "First Trust NASDAQ Clean Edge",
+    "theme": "clean_energy_us",
+    "price": 47.44,
+    "sma_50": 49.03,
+    "sma_200": 41.78,
+    "rsi_14": 37.5,
+    "price_vs_sma50_pct": -3.2,
+    "price_vs_sma200_pct": 13.5,
+    "drawdown_from_high": -9.3,
+    "date": "2026-03-11",
+    "dca_signal": "accelerate"
+  },
+  {
+    "ticker": "PHO",
+    "name": "Invesco Water Resources",
+    "theme": "water",
+    "price": 68.65,
+    "sma_50": 72.51,
+    "sma_200": 71.64,
+    "rsi_14": 26.2,
+    "price_vs_sma50_pct": -5.3,
+    "price_vs_sma200_pct": -4.2,
+    "drawdown_from_high": -8.4,
+    "date": "2026-03-11",
+    "dca_signal": "accelerate"
   }
 ]
