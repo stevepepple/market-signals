@@ -42,20 +42,6 @@
     "dca_signal": "steady"
   },
   {
-    "ticker": "IBIT",
-    "name": "iShares Bitcoin Trust",
-    "theme": "crypto",
-    "price": 39.71,
-    "sma_50": 44.87,
-    "sma_200": 57.08,
-    "rsi_14": 56.5,
-    "price_vs_sma50_pct": -11.5,
-    "price_vs_sma200_pct": -30.4,
-    "drawdown_from_high": -44.7,
-    "date": "2026-03-11",
-    "dca_signal": "accelerate"
-  },
-  {
     "ticker": "ICLN",
     "name": "Global Clean Energy",
     "theme": "clean_energy",
@@ -166,20 +152,6 @@
     "drawdown_from_high": -3.5,
     "date": "2026-03-11",
     "dca_signal": "slow"
-  },
-  {
-    "ticker": "VIXY",
-    "name": "ProShares VIX Short-Term",
-    "theme": "volatility",
-    "price": 32.68,
-    "sma_50": 26.99,
-    "sma_200": 35.33,
-    "rsi_14": 64,
-    "price_vs_sma50_pct": 21.1,
-    "price_vs_sma200_pct": -7.5,
-    "drawdown_from_high": -63.3,
-    "date": "2026-03-11",
-    "dca_signal": "accelerate"
   },
   {
     "ticker": "ESGV",
