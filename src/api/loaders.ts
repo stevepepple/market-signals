@@ -1,4 +1,5 @@
 import type { EconomicIndicator, CalendarEvent, SentimentReading, NewsItem } from "../types/economic";
+import type { ValuationIndicator } from "./valuation";
 
 async function loadJson<T>(path: string): Promise<T[]> {
   try {
@@ -24,4 +25,8 @@ export function loadSentimentData(): Promise<SentimentReading[]> {
 
 export function loadNewsData(): Promise<NewsItem[]> {
   return loadJson<NewsItem>("news.json");
+}
+
+export function loadValuationData(): Promise<ValuationIndicator[]> {
+  return loadJson<ValuationIndicator>("valuation.json");
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import type { PortfolioData } from "../types";
+import DcaPacing from "../components/DcaPacing";
 
 export default function ApproachPage() {
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
@@ -195,6 +196,14 @@ export default function ApproachPage() {
         </div>
       </section>
 
+      {/* DCA Pacing Dashboard */}
+      <section className="mb-10">
+        <h2 className="text-xl font-semibold mb-4">DCA Pacing by Sector</h2>
+        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-6">
+          <DcaPacing />
+        </div>
+      </section>
+
       {/* Signal sources */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">Signal Sources</h2>
@@ -217,16 +226,16 @@ export default function ApproachPage() {
             </div>
             <div>
               <h3 className="font-semibold mb-2">Valuation &amp; Momentum</h3>
-              <p className="text-sm mb-2 italic text-gray-400">
-                Coming soon — price vs. moving averages, RSI, sector-relative P/E ratios to identify
-                dips and frothy conditions.
+              <p className="text-sm mb-2">
+                Daily price data from Yahoo Finance for 13 sector ETFs. RSI-14, price vs. 50/200-day
+                moving averages, and drawdown from 52-week high drive the DCA pacing signals above.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Economic Indicators</h3>
-              <p className="text-sm mb-2 italic text-gray-400">
-                Coming soon — FRED data (unemployment, CPI, GDP) and sentiment indices to provide
-                macro context for DCA pacing.
+              <h3 className="font-semibold mb-2">Sentiment &amp; Economic Indicators</h3>
+              <p className="text-sm mb-2">
+                CNN Fear &amp; Greed Index, Crypto Fear &amp; Greed, VIX, plus FRED economic data
+                (unemployment, CPI, GDP, yield curve) for macro context.
               </p>
             </div>
           </div>
