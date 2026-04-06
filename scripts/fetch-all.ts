@@ -2,6 +2,7 @@ import { fetchEconomicData } from "./fetch-economic";
 import { fetchFinnhubData } from "./fetch-finnhub";
 import { fetchSentimentData } from "./fetch-sentiment";
 import { fetchValuationData } from "./fetch-valuation";
+import { fetchPortfolioData } from "./fetch-portfolio";
 
 async function main() {
   console.log("=== Fetching all market signals data ===\n");
@@ -43,6 +44,10 @@ async function main() {
   // Fetch valuation & momentum indicators (Yahoo Finance, no API key needed)
   console.log("\n--- Valuation & Momentum ---");
   await fetchValuationData().catch((e) => console.error("Valuation fetch failed (non-fatal):", e));
+
+  // Fetch portfolio holdings from Plaid
+  console.log("\n--- Portfolio (Plaid) ---");
+  await fetchPortfolioData().catch((e) => console.error("Portfolio fetch failed (non-fatal):", e));
 
   console.log("\n=== Done ===");
 }

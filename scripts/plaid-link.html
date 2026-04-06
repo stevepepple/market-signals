@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plaid Link Setup</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 500px; margin: 80px auto; padding: 0 20px; color: #333; }
+    h1 { font-size: 1.4rem; }
+    #status { margin-top: 20px; padding: 16px; border-radius: 8px; background: #f3f4f6; }
+    .success { background: #d1fae5 !important; color: #065f46; }
+    .error { background: #fee2e2 !important; color: #991b1b; }
+    button { background: #4f46e5; color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+    button:hover { background: #4338ca; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <h1>Plaid Link Setup</h1>
+  <p>Connect your brokerage account to sync holdings automatically.</p>
+  <button id="link-btn" onclick="openLink()">Connect Account</button>
+  <div id="status">Waiting to start...</div>
+
+  <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+  <script>
+    const linkToken = "__LINK_TOKEN__";
+    const statusEl = document.getElementById("status");
+    const btn = document.getElementById("link-btn");
+
+    function openLink() {
+      btn.disabled = true;
+      statusEl.textContent = "Opening Plaid Link...";
+
+      const handler = Plaid.create({
+        token: linkToken,
+        onSuccess: async (publicToken, metadata) => {
+          statusEl.textContent = "Exchanging token...";
+          try {
+            const resp = await fetch("/callback", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                public_token: publicToken,
+                institution: metadata.institution?.name || "Unknown",
+              }),
+            });
+            const data = await resp.json();
+            if (data.success) {
+              statusEl.className = "success";
+              statusEl.innerHTML = `Connected <strong>${data.institution}</strong>.<br><br>
+                Access token:<br><code style="word-break:break-all">${data.access_token}</code><br><br>
+                Add this as a GitHub Secret:<br>
+                <code>PLAID_ACCESS_TOKEN_${data.institution.toUpperCase().replace(/\s+/g, "_")}</code>`;
+            } else {
+              statusEl.className = "error";
+              statusEl.textContent = "Error: " + (data.error || "Unknown error");
+            }
+          } catch (e) {
+            statusEl.className = "error";
+            statusEl.textContent = "Callback failed: " + e.message;
+          }
+          btn.disabled = false;
+        },
+        onExit: (err) => {
+          btn.disabled = false;
+          if (err) {
+            statusEl.className = "error";
+            statusEl.textContent = "Link exited with error: " + err.display_message;
+          } else {
+            statusEl.textContent = "Link closed. Click to try again.";
+          }
+        },
+      });
+
+      handler.open();
+    }
+  </script>
+</body>
+</html>

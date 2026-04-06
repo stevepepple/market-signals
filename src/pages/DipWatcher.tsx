@@ -24,6 +24,7 @@ import {
 import HoldingCard from "../components/dip/HoldingCard";
 import TradeLog from "../components/dip/TradeLog";
 import ExportReport from "../components/dip/ExportReport";
+import CsvImportButton from "../components/dip/CsvImportButton";
 
 type Tab = "holdings" | "log" | "report" | "settings";
 
@@ -402,10 +403,13 @@ export default function DipWatcher() {
                 </div>
               </div>
             ) : (
-              <button onClick={() => setShowAddForm(true)}
-                className="w-full py-3 border-2 border-dashed rounded-lg text-gray-500 dark:text-gray-400 dark:border-gray-700 hover:border-indigo-300 hover:text-indigo-600 dark:hover:border-indigo-700 dark:hover:text-indigo-400 transition-colors">
-                + Add Holding
-              </button>
+              <div className="flex gap-3 items-center">
+                <button onClick={() => setShowAddForm(true)}
+                  className="flex-1 py-3 border-2 border-dashed rounded-lg text-gray-500 dark:text-gray-400 dark:border-gray-700 hover:border-indigo-300 hover:text-indigo-600 dark:hover:border-indigo-700 dark:hover:text-indigo-400 transition-colors">
+                  + Add Holding
+                </button>
+                <CsvImportButton existing={holdings} onImport={setHoldings} />
+              </div>
             )}
           </div>
         )}
