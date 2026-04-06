@@ -106,7 +106,7 @@ export default function DipWatcher() {
 
     try {
       // Use Anthropic API with web_search tool
-      const apiKey = (window as Record<string, unknown>).__ANTHROPIC_API_KEY__ as string | undefined;
+      const apiKey = (window as unknown as Record<string, unknown>).__ANTHROPIC_API_KEY__ as string | undefined;
       if (!apiKey) {
         setError("Anthropic API key not found. Set window.__ANTHROPIC_API_KEY__ or use the Claude in Chrome extension.");
         setChecking(false);
