@@ -20,6 +20,7 @@ import EventsTimeline from "./components/EventsTimeline";
 import NewsFeed from "./components/NewsFeed";
 import PortfolioPage from "./pages/PortfolioPage";
 import ApproachPage from "./pages/ApproachPage";
+import DipWatcher from "./pages/DipWatcher";
 
 const DEFAULT_FILTERS: Filters = {
   useKalshi: true,
@@ -374,6 +375,7 @@ export default function App() {
           />
           <Route path="/portfolio" element={<div className="max-w-7xl mx-auto p-8"><PortfolioPage recommendations={recommendations} /></div>} />
           <Route path="/approach" element={<div className="max-w-7xl mx-auto p-8"><ApproachPage /></div>} />
+          <Route path="/dips" element={<DipWatcher />} />
         </Routes>
       </div>
     </div>

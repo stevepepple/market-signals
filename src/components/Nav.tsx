@@ -18,6 +18,7 @@ export default function Nav({ dark, onToggleDark }: { dark: boolean; onToggleDar
           <NavLink to="/" className={linkClass}>Dashboard</NavLink>
           <NavLink to="/portfolio" className={linkClass}>Portfolio</NavLink>
           <NavLink to="/approach" className={linkClass}>Investment Approach</NavLink>
+          <NavLink to="/dips" className={linkClass}>DipWatcher</NavLink>
         </div>
         <button
           onClick={onToggleDark}
