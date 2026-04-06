@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import type { Holding, PortfolioData } from "../types";
 import type { DipHolding, DipSignal, TradeLogEntry } from "../types/dip";
 import {
   evaluateAllSignals,
@@ -41,6 +42,17 @@ const EMPTY_HOLDING: DipHolding = {
   tiers: [{ pct: 7, amount: 500 }],
 };
 
+/** Convert a base Holding into a DipHolding with sensible defaults */
+function toDipHolding(h: Holding): DipHolding {
+  return {
+    ...h,
+    cashReserve: 0,
+    profitThreshold: 15,
+    sellPct: 25,
+    tiers: [{ pct: 7, amount: 500 }],
+  };
+}
+
 export default function DipWatcher() {
   const [tab, setTab] = useState<Tab>("holdings");
   const [holdings, setHoldings] = useState<DipHolding[]>(() => loadHoldings());
@@ -48,6 +60,22 @@ export default function DipWatcher() {
   const [lastChecked, setLastChecked] = useState<string | null>(() => loadCachedSignals().lastChecked);
   const [tradeLog, setTradeLog] = useState<TradeLogEntry[]>(() => loadTradeLog());
   const [email, setEmail] = useState(() => loadSettings().email ?? "");
+
+  // Seed from portfolio.json if no DipWatcher holdings are saved yet
+  useEffect(() => {
+    if (holdings.length > 0) return;
+    fetch(`${import.meta.env.BASE_URL}data/portfolio.json`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: PortfolioData | null) => {
+        if (!data) return;
+        const all = data.accounts.flatMap((a) => a.holdings);
+        if (all.length === 0) return;
+        const seeded = all.map(toDipHolding);
+        setHoldings(seeded);
+        saveHoldings(seeded);
+      })
+      .catch(() => {});
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
