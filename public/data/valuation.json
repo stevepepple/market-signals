@@ -10,7 +10,7 @@
     "price_vs_sma50_pct": 7.1,
     "price_vs_sma200_pct": 9.3,
     "drawdown_from_high": -1.4,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -24,7 +24,7 @@
     "price_vs_sma50_pct": 12.3,
     "price_vs_sma200_pct": 16,
     "drawdown_from_high": -1.8,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "slow"
   },
   {
@@ -38,7 +38,7 @@
     "price_vs_sma50_pct": -3.2,
     "price_vs_sma200_pct": -5.1,
     "drawdown_from_high": -9.3,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "accelerate"
   },
   {
@@ -52,7 +52,7 @@
     "price_vs_sma50_pct": 12.5,
     "price_vs_sma200_pct": 26.7,
     "drawdown_from_high": -1.7,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -66,7 +66,7 @@
     "price_vs_sma50_pct": 0.8,
     "price_vs_sma200_pct": 2.7,
     "drawdown_from_high": -3.6,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -80,7 +80,7 @@
     "price_vs_sma50_pct": -1.2,
     "price_vs_sma200_pct": -1.6,
     "drawdown_from_high": -9.6,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "accelerate"
   },
   {
@@ -94,7 +94,7 @@
     "price_vs_sma50_pct": 0.9,
     "price_vs_sma200_pct": -2.9,
     "drawdown_from_high": -9.6,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "accelerate"
   },
   {
@@ -108,7 +108,7 @@
     "price_vs_sma50_pct": 2.3,
     "price_vs_sma200_pct": 20.7,
     "drawdown_from_high": -6.3,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -122,7 +122,7 @@
     "price_vs_sma50_pct": 1.8,
     "price_vs_sma200_pct": -0.6,
     "drawdown_from_high": -6.8,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -136,7 +136,7 @@
     "price_vs_sma50_pct": -3.6,
     "price_vs_sma200_pct": 0.2,
     "drawdown_from_high": -13.3,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "accelerate"
   },
   {
@@ -150,7 +150,7 @@
     "price_vs_sma50_pct": 6.2,
     "price_vs_sma200_pct": 26.9,
     "drawdown_from_high": -1.7,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -164,7 +164,7 @@
     "price_vs_sma50_pct": 8,
     "price_vs_sma200_pct": 9,
     "drawdown_from_high": -1.6,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -178,7 +178,7 @@
     "price_vs_sma50_pct": 17.2,
     "price_vs_sma200_pct": 32.1,
     "drawdown_from_high": -3.4,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "steady"
   },
   {
@@ -192,7 +192,7 @@
     "price_vs_sma50_pct": -5.3,
     "price_vs_sma200_pct": -9.6,
     "drawdown_from_high": -14.1,
-    "date": "2026-05-17",
+    "date": "2026-05-18",
     "dca_signal": "accelerate"
   }
 ]
