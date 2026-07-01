@@ -74,7 +74,7 @@ jobs:
             echo "data_changed=false" >> "$GITHUB_OUTPUT"
           else
             git stash
-            git pull --rebase origin main
+            git pull --rebase origin "$GITHUB_REF_NAME"
             git stash pop
             git add public/data/markets.json public/data/insider-trades.json public/data/economic.json public/data/calendar.json public/data/sentiment.json public/data/news.json public/data/valuation.json public/data/portfolio.json
             git commit -m "chore: refresh market data $(date -u +%Y-%m-%d)"
