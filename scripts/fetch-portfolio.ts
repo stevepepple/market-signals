@@ -1,6 +1,8 @@
 import { writeFileSync, readFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import type { Holding, PortfolioAccount } from "./portfolio-types";
+import { loadRobinhoodMcpConfig, fetchRobinhoodMcpHoldings } from "./robinhood-mcp";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUTPUT_PATH = resolve(__dirname, "../public/data/portfolio.json");
@@ -30,23 +32,6 @@ interface PlaidInvestmentsResponse {
   accounts: PlaidAccount[];
   holdings: PlaidHolding[];
   securities: PlaidSecurity[];
-}
-
-interface Holding {
-  name: string;
-  symbol: string;
-  shares: number;
-  price: number;
-  avg_cost: number;
-  total_return: number;
-  equity: number;
-  type: "ETF" | "stock";
-}
-
-interface PortfolioAccount {
-  brokerage: string;
-  last_updated: string;
-  holdings: Holding[];
 }
 
 async function fetchPlaidHoldings(
@@ -117,32 +102,50 @@ export async function fetchPortfolioData() {
   const clientId = process.env.PLAID_CLIENT_ID;
   const secret = process.env.PLAID_SECRET;
 
-  if (!clientId || !secret) {
-    console.log("PLAID_CLIENT_ID or PLAID_SECRET not set — skipping portfolio fetch");
-    return;
+  const today = new Date().toISOString().slice(0, 10);
+  const accounts: PortfolioAccount[] = [];
+  const warnings: string[] = [];
+
+  // Robinhood: prefer the official MCP server (first-party, live prices);
+  // fall back to the Plaid connection if MCP isn't configured or fails.
+  let robinhoodFetched = false;
+  const mcpConfig = loadRobinhoodMcpConfig();
+  if (mcpConfig) {
+    try {
+      console.log("Fetching Robinhood holdings via official MCP server...");
+      const holdings = await fetchRobinhoodMcpHoldings(mcpConfig);
+      console.log(`  → ${holdings.length} holdings`);
+      accounts.push({ brokerage: "Robinhood", last_updated: today, holdings });
+      robinhoodFetched = true;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      warnings.push(`Robinhood MCP: ${msg}`);
+      console.warn(`  ⚠ Robinhood MCP fetch failed, will try Plaid fallback:`, msg);
+    }
   }
 
   const tokens: { name: string; token: string }[] = [];
-  if (process.env.PLAID_ACCESS_TOKEN_ROBINHOOD) {
+  if (process.env.PLAID_ACCESS_TOKEN_ROBINHOOD && !robinhoodFetched) {
     tokens.push({ name: "Robinhood", token: process.env.PLAID_ACCESS_TOKEN_ROBINHOOD });
   }
   if (process.env.PLAID_ACCESS_TOKEN_WEALTHFRONT) {
     tokens.push({ name: "Wealthfront", token: process.env.PLAID_ACCESS_TOKEN_WEALTHFRONT });
   }
 
-  if (tokens.length === 0) {
-    console.log("No Plaid access tokens configured — skipping portfolio fetch");
+  if (tokens.length > 0 && (!clientId || !secret)) {
+    console.log("PLAID_CLIENT_ID or PLAID_SECRET not set — skipping Plaid accounts");
+    tokens.length = 0;
+  }
+
+  if (accounts.length === 0 && tokens.length === 0) {
+    console.log("No portfolio sources configured — skipping portfolio fetch");
     return;
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  const accounts: PortfolioAccount[] = [];
-  const warnings: string[] = [];
-
   for (const { name, token } of tokens) {
     try {
-      console.log(`Fetching holdings from ${name}...`);
-      const data = await fetchPlaidHoldings(clientId, secret, token);
+      console.log(`Fetching holdings from ${name} via Plaid...`);
+      const data = await fetchPlaidHoldings(clientId!, secret!, token);
       const holdings = mapToHoldings(data);
       console.log(`  → ${holdings.length} holdings`);
       accounts.push({

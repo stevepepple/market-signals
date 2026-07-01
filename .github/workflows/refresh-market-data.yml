@@ -39,7 +39,29 @@ jobs:
           PLAID_SECRET: ${{ secrets.PLAID_SECRET }}
           PLAID_ACCESS_TOKEN_ROBINHOOD: ${{ secrets.PLAID_ACCESS_TOKEN_ROBINHOOD }}
           PLAID_ACCESS_TOKEN_WEALTHFRONT: ${{ secrets.PLAID_ACCESS_TOKEN_WEALTHFRONT }}
+          ROBINHOOD_MCP_CLIENT_ID: ${{ secrets.ROBINHOOD_MCP_CLIENT_ID }}
+          ROBINHOOD_MCP_CLIENT_SECRET: ${{ secrets.ROBINHOOD_MCP_CLIENT_SECRET }}
+          ROBINHOOD_MCP_REFRESH_TOKEN: ${{ secrets.ROBINHOOD_MCP_REFRESH_TOKEN }}
+          ROBINHOOD_ROTATED_TOKEN_FILE: ${{ runner.temp }}/robinhood-rotated-token
         run: npm run fetch-data
+
+      # If Robinhood rotated the refresh token, persist it so the next run
+      # still authenticates. Requires SECRETS_ADMIN_PAT (fine-grained PAT with
+      # secrets: write); without it we just warn.
+      - name: Update rotated Robinhood refresh token
+        if: hashFiles(format('{0}/robinhood-rotated-token', runner.temp)) != ''
+        env:
+          GH_TOKEN: ${{ secrets.SECRETS_ADMIN_PAT }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::Robinhood rotated the refresh token but SECRETS_ADMIN_PAT is not set." \
+              "Re-run 'npm run robinhood-setup' and update ROBINHOOD_MCP_REFRESH_TOKEN manually."
+            exit 0
+          fi
+          gh secret set ROBINHOOD_MCP_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" \
+            < "$RUNNER_TEMP/robinhood-rotated-token"
+          rm -f "$RUNNER_TEMP/robinhood-rotated-token"
+          echo "ROBINHOOD_MCP_REFRESH_TOKEN secret updated."
 
       - name: Commit and push if changed
         id: commit

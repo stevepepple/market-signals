@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fetch-data": "tsx scripts/fetch-all.ts",
-    "plaid-setup": "tsx scripts/plaid-link-setup.ts"
+    "plaid-setup": "tsx scripts/plaid-link-setup.ts",
+    "robinhood-setup": "tsx scripts/robinhood-mcp-setup.ts"
   },
   "dependencies": {
     "react": "^19.0.0",

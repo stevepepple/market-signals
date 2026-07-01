@@ -9,6 +9,19 @@ Prediction market signals mapped to ETF & stock recommendations, plus insider tr
 - **Polymarket** — prediction markets (500+ active markets)
 - **Kalshi** — economics, stocks, and event markets
 - **OpenInsider** — SEC Form 4 insider purchases and sales
+- **Robinhood** — portfolio holdings via the official [Trading MCP server](https://robinhood.com/us/en/support/articles/agentic-trading-overview/) (falls back to Plaid)
+- **Wealthfront** — portfolio holdings via Plaid Investments
+
+### Portfolio setup
+
+- **Robinhood (recommended):** `npm run robinhood-setup` walks through Robinhood's
+  OAuth flow, saves tokens to `.robinhood-tokens.json` (gitignored), and prints the
+  `ROBINHOOD_MCP_CLIENT_ID` / `ROBINHOOD_MCP_REFRESH_TOKEN` secrets to set for the
+  daily GitHub Actions refresh. If Robinhood rotates refresh tokens, also set
+  `SECRETS_ADMIN_PAT` (fine-grained PAT with secrets write) so the workflow can
+  keep the secret current.
+- **Plaid (Wealthfront, and Robinhood fallback):** `npm run plaid-setup` with
+  `PLAID_CLIENT_ID`/`PLAID_SECRET` set, then add the printed access-token secrets.
 
 ## Signal Themes
 

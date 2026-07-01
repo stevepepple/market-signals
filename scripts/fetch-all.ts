@@ -45,8 +45,8 @@ async function main() {
   console.log("\n--- Valuation & Momentum ---");
   await fetchValuationData().catch((e) => console.error("Valuation fetch failed (non-fatal):", e));
 
-  // Fetch portfolio holdings from Plaid
-  console.log("\n--- Portfolio (Plaid) ---");
+  // Fetch portfolio holdings (Robinhood MCP + Plaid)
+  console.log("\n--- Portfolio ---");
   await fetchPortfolioData().catch((e) => console.error("Portfolio fetch failed (non-fatal):", e));
 
   console.log("\n=== Done ===");
