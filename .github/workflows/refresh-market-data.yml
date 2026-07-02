@@ -48,11 +48,14 @@ jobs:
       # If Robinhood rotated the refresh token, persist it so the next run
       # still authenticates. Requires SECRETS_ADMIN_PAT (fine-grained PAT with
       # secrets: write); without it we just warn.
+      # (File existence is checked in bash: hashFiles() can't see runner.temp.)
       - name: Update rotated Robinhood refresh token
-        if: hashFiles(format('{0}/robinhood-rotated-token', runner.temp)) != ''
         env:
           GH_TOKEN: ${{ secrets.SECRETS_ADMIN_PAT }}
         run: |
+          if [ ! -f "$RUNNER_TEMP/robinhood-rotated-token" ]; then
+            exit 0
+          fi
           if [ -z "$GH_TOKEN" ]; then
             echo "::warning::Robinhood rotated the refresh token but SECRETS_ADMIN_PAT is not set." \
               "Re-run 'npm run robinhood-setup' and update ROBINHOOD_MCP_REFRESH_TOKEN manually."

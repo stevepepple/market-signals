@@ -129,9 +129,9 @@ interface JsonRpcMessage {
 
 /** Extract the JSON-RPC response with the given id from an SSE body. */
 export function parseSseResponse(body: string, id: number): JsonRpcMessage | null {
-  for (const event of body.split(/\n\n/)) {
+  for (const event of body.split(/\r?\n\r?\n/)) {
     const data = event
-      .split(/\n/)
+      .split(/\r?\n/)
       .filter((l) => l.startsWith("data:"))
       .map((l) => l.slice(5).trim())
       .join("\n");

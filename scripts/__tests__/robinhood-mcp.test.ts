@@ -143,6 +143,12 @@ describe("parseSseResponse", () => {
     expect(msg?.result).toEqual({ ok: true });
     expect(parseSseResponse(body, 99)).toBeNull();
   });
+
+  it("handles CRLF line endings", () => {
+    const body =
+      ': ping\r\n\r\ndata: {"jsonrpc":"2.0","id":7,"result":{"ok":1}}\r\n\r\n';
+    expect(parseSseResponse(body, 7)?.result).toEqual({ ok: 1 });
+  });
 });
 
 describe("toolResultToData", () => {

@@ -138,7 +138,12 @@ export async function fetchPortfolioData() {
   }
 
   if (accounts.length === 0 && tokens.length === 0) {
-    console.log("No portfolio sources configured — skipping portfolio fetch");
+    if (warnings.length > 0) {
+      console.warn("No accounts fetched successfully. Keeping existing portfolio.json.");
+      console.warn("Warnings:", warnings.join("; "));
+    } else {
+      console.log("No portfolio sources configured — skipping portfolio fetch");
+    }
     return;
   }
 
