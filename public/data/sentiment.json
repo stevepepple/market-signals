@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "source": "crypto_fear_greed",
+    "score": 10,
+    "label": "Extreme Fear",
+    "timestamp": "2026-11-16T00:00:00.000Z"
+  }
+]
